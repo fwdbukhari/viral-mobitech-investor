@@ -4,7 +4,7 @@ import { requireAdmin } from '../../../../lib/auth'
 
 function toClient(inv) {
   const { password_hash, ...safe } = inv
-  return { ...safe, sharePercent: inv.share_percent, createdAt: inv.created_at }
+  return { ...safe, sharePercent: inv.share_percent, createdAt: inv.created_at, plainPassword: inv.plain_password }
 }
 
 async function handler(req, res) {
@@ -18,7 +18,10 @@ async function handler(req, res) {
       share_percent: parseFloat(sharePercent) || 30,
       email: email || '', notes: notes || '',
     }
-    if (password) updates.password_hash = await bcrypt.hash(password, 10)
+    if (password) {
+      updates.password_hash = await bcrypt.hash(password, 10)
+      updates.plain_password = password
+    }
 
     const { data, error } = await supabase.from('investors').update(updates).eq('id', id).select().single()
     if (error) return res.status(500).json({ error: error.message })

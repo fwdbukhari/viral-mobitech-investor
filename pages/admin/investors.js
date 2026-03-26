@@ -9,19 +9,20 @@ const NAV = [
 ]
 
 const EMPTY_FORM = { name: '', username: '', password: '', sharePercent: 30, email: '', notes: '' }
+const PORTAL_URL = 'https://viral-mobitech-investor.vercel.app'
 
-// Generate a strong password
 function generatePassword(name = '') {
   const specials = ['@', '#', '!', '$', '%']
   const words = ['Invest', 'Profit', 'Secure', 'Capital', 'Growth', 'Venture', 'Yield', 'Asset']
-  const word = name ? name.split(' ')[0].charAt(0).toUpperCase() + name.split(' ')[0].slice(1).toLowerCase() : words[Math.floor(Math.random() * words.length)]
+  const word = name
+    ? name.split(' ')[0].charAt(0).toUpperCase() + name.split(' ')[0].slice(1).toLowerCase()
+    : words[Math.floor(Math.random() * words.length)]
   const num = Math.floor(Math.random() * 900) + 100
   const special = specials[Math.floor(Math.random() * specials.length)]
   const suffix = Math.floor(Math.random() * 90) + 10
   return `${word}${num}${special}${suffix}`
 }
 
-// Generate username from name
 function suggestUsername(name) {
   if (!name) return ''
   const parts = name.trim().toLowerCase().split(/\s+/)
@@ -29,9 +30,40 @@ function suggestUsername(name) {
   return parts[0]
 }
 
+function downloadCredentials(investor, password) {
+  const content = [
+    '================================================',
+    '   VIRAL MOBITECH — INVESTOR PORTAL ACCESS',
+    '================================================',
+    '',
+    `  Investor Name : ${investor.name}`,
+    `  Portal Link   : ${PORTAL_URL}`,
+    `  Username      : ${investor.username}`,
+    `  Password      : ${password}`,
+    `  Share %       : ${investor.sharePercent}%`,
+    investor.email ? `  Email         : ${investor.email}` : '',
+    '',
+    '------------------------------------------------',
+    '  IMPORTANT: Keep these credentials confidential',
+    '  Do not share with unauthorized persons.',
+    '================================================',
+    `  Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+    '================================================',
+  ].filter(l => l !== null).join('\n')
+
+  const blob = new Blob([content], { type: 'text/plain' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${investor.username}-portal-credentials.txt`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function InvestorsAdmin() {
   const [user, setUser] = useState(null)
   const [investors, setInvestors] = useState([])
+  const [loading, setLoading] = useState(true) // FIX 3: loading state
   const [form, setForm] = useState(EMPTY_FORM)
   const [editId, setEditId] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -42,6 +74,7 @@ export default function InvestorsAdmin() {
   const [showPass, setShowPass] = useState(false)
   const [usernameSuggestions, setUsernameSuggestions] = useState([])
   const [passwordStrength, setPasswordStrength] = useState(null)
+  const [savedCredentials, setSavedCredentials] = useState(null) // FIX 1: credentials modal
 
   useEffect(() => {
     Promise.all([
@@ -50,24 +83,20 @@ export default function InvestorsAdmin() {
     ]).then(([u, inv]) => {
       setUser(u)
       setInvestors(Array.isArray(inv) ? inv : [])
+      setLoading(false) // FIX 3: done loading
     })
   }, [])
 
-  // Auto-suggest username when name changes
+  // Username suggestions
   useEffect(() => {
     if (!editId && form.name && form.name.length > 2) {
       const base = suggestUsername(form.name)
-      setUsernameSuggestions([
-        base,
-        base + '2025',
-        base.charAt(0) + form.name.split(' ').slice(-1)[0]?.toLowerCase() || base,
-      ].filter((v, i, arr) => arr.indexOf(v) === i))
-    } else {
-      setUsernameSuggestions([])
-    }
+      const last = form.name.split(' ').slice(-1)[0]?.toLowerCase() || ''
+      setUsernameSuggestions([base, base + '2025', form.name.split(' ')[0][0]?.toLowerCase() + last].filter((v, i, a) => v && a.indexOf(v) === i))
+    } else setUsernameSuggestions([])
   }, [form.name, editId])
 
-  // Password strength checker
+  // Password strength
   useEffect(() => {
     const p = form.password
     if (!p) { setPasswordStrength(null); return }
@@ -77,37 +106,39 @@ export default function InvestorsAdmin() {
     if (/[A-Z]/.test(p)) score++
     if (/[0-9]/.test(p)) score++
     if (/[^A-Za-z0-9]/.test(p)) score++
-    if (score <= 1) setPasswordStrength({ label: 'Weak', color: '#dc2626', bg: 'bg-red-500', width: '20%' })
-    else if (score <= 2) setPasswordStrength({ label: 'Fair', color: '#d97706', bg: 'bg-amber-500', width: '45%' })
-    else if (score <= 3) setPasswordStrength({ label: 'Good', color: '#ca8a04', bg: 'bg-yellow-500', width: '65%' })
-    else if (score <= 4) setPasswordStrength({ label: 'Strong', color: '#16a34a', bg: 'bg-green-600', width: '85%' })
-    else setPasswordStrength({ label: 'Very Strong', color: '#15803d', bg: 'bg-green-700', width: '100%' })
+    const levels = [
+      { label: 'Weak', color: '#dc2626', bg: 'bg-red-500', width: '20%' },
+      { label: 'Weak', color: '#dc2626', bg: 'bg-red-500', width: '20%' },
+      { label: 'Fair', color: '#d97706', bg: 'bg-amber-500', width: '45%' },
+      { label: 'Good', color: '#ca8a04', bg: 'bg-yellow-500', width: '65%' },
+      { label: 'Strong', color: '#16a34a', bg: 'bg-green-600', width: '85%' },
+      { label: 'Very Strong', color: '#15803d', bg: 'bg-green-700', width: '100%' },
+    ]
+    setPasswordStrength(levels[score])
   }, [form.password])
 
   function startEdit(inv) {
     setEditId(inv.id)
-    setForm({ ...inv, password: '' })
+    // FIX 2: pre-fill with stored plain password
+    setForm({ ...inv, password: inv.plainPassword || '' })
     setShowForm(true)
-    setError('')
-    setSuccess('')
-    setShowPass(false)
+    setShowPass(inv.plainPassword ? true : false)
+    setError(''); setSuccess('')
   }
 
   function startAdd() {
     setEditId(null)
     setForm(EMPTY_FORM)
     setShowForm(true)
-    setError('')
-    setSuccess('')
     setShowPass(false)
+    setError(''); setSuccess('')
   }
 
   function cancel() {
     setShowForm(false)
     setEditId(null)
     setForm(EMPTY_FORM)
-    setError('')
-    setSuccess('')
+    setError(''); setSuccess('')
   }
 
   function handleGeneratePassword() {
@@ -117,9 +148,7 @@ export default function InvestorsAdmin() {
   }
 
   async function handleSave() {
-    setSaving(true)
-    setError('')
-    setSuccess('')
+    setSaving(true); setError(''); setSuccess('')
     try {
       const url = editId ? `/api/admin/investors/${editId}` : '/api/admin/investors'
       const method = editId ? 'PUT' : 'POST'
@@ -135,19 +164,19 @@ export default function InvestorsAdmin() {
       if (!res.ok) {
         setError(data.error || 'Failed to save')
       } else {
-        setSuccess(editId ? 'Investor updated successfully!' : 'Investor added successfully!')
         if (editId) {
           setInvestors(prev => prev.map(i => i.id === editId ? data : i))
+          setSuccess('Investor updated successfully!')
+          setTimeout(cancel, 1500)
         } else {
           setInvestors(prev => [...prev, data])
+          // FIX 1: show credentials modal after creating
+          setSavedCredentials({ investor: data, password: form.password })
+          cancel()
         }
-        setTimeout(cancel, 1500)
       }
-    } catch {
-      setError('Connection error')
-    } finally {
-      setSaving(false)
-    }
+    } catch { setError('Connection error') }
+    finally { setSaving(false) }
   }
 
   return (
@@ -155,22 +184,75 @@ export default function InvestorsAdmin() {
       <Head><title>Investors — Admin</title></Head>
       <Layout user={user} adminLinks={NAV} investorLinks={NAV}>
         <div className="max-w-3xl mx-auto">
+
+          {/* FIX 1: Credentials modal after creating investor */}
+          {savedCredentials && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              style={{ background: 'rgba(0,0,0,0.5)' }}>
+              <div className="card w-full max-w-md shadow-2xl">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                    style={{ background: 'linear-gradient(135deg, #b8860b, #d4a017)' }}>
+                    ✓
+                  </div>
+                  <div>
+                    <p className="font-bold" style={{ color: 'var(--text-primary)' }}>Investor Created!</p>
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Share these credentials with {savedCredentials.investor.name}</p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl p-4 mb-4 space-y-3" style={{ background: 'var(--bg-base)', border: '1px solid var(--border)' }}>
+                  {[
+                    { label: 'Portal Link', value: PORTAL_URL },
+                    { label: 'Username', value: savedCredentials.investor.username },
+                    { label: 'Password', value: savedCredentials.password },
+                    { label: 'Share %', value: `${savedCredentials.investor.sharePercent}%` },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
+                      <span className="text-sm font-bold font-mono" style={{ color: 'var(--text-primary)' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => downloadCredentials(savedCredentials.investor, savedCredentials.password)}
+                    className="btn-gold flex-1 justify-center">
+                    ⬇ Download Credentials
+                  </button>
+                  <button onClick={() => setSavedCredentials(null)} className="btn-ghost px-4">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
                 Investor Accounts
               </h1>
               <p className="text-sm mt-0.5 font-medium" style={{ color: 'var(--text-muted)' }}>
-                {investors.length} investor{investors.length !== 1 ? 's' : ''} registered
+                {loading ? 'Loading...' : `${investors.length} investor${investors.length !== 1 ? 's' : ''} registered`}
               </p>
             </div>
-            {!showForm && (
+            {!showForm && !loading && (
               <button onClick={startAdd} className="btn-gold text-sm">+ Add Investor</button>
             )}
           </div>
 
-          {/* Investor list */}
-          {!showForm && (
+          {/* FIX 3: Show spinner while loading, not empty state */}
+          {loading ? (
+            <div className="card flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3"
+                  style={{ borderColor: 'var(--border)', borderTopColor: '#b8860b' }} />
+                <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading investors…</p>
+              </div>
+            </div>
+          ) : !showForm ? (
             <div className="flex flex-col gap-3 mb-6">
               {investors.length === 0 && (
                 <div className="card text-center py-10">
@@ -190,13 +272,13 @@ export default function InvestorsAdmin() {
                     <div>
                       <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{inv.name}</p>
                       <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                        @{inv.username} · {inv.sharePercent}% share
-                        {inv.email ? ` · ${inv.email}` : ''}
+                        @{inv.username} · {inv.sharePercent}% share{inv.email ? ` · ${inv.email}` : ''}
                       </p>
-                      {inv.notes && <p className="text-xs mt-0.5 italic" style={{ color: 'var(--text-muted)' }}>{inv.notes}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button onClick={() => downloadCredentials(inv, inv.plainPassword || '••••••••')}
+                      className="btn-ghost text-xs px-3 py-1.5">⬇ Creds</button>
                     <button onClick={() => startEdit(inv)} className="btn-ghost text-xs px-3 py-1.5">Edit</button>
                     {confirmDelete === inv.id ? (
                       <div className="flex items-center gap-1.5">
@@ -214,7 +296,7 @@ export default function InvestorsAdmin() {
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
 
           {/* Add / Edit form */}
           {showForm && (
@@ -224,19 +306,16 @@ export default function InvestorsAdmin() {
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Full Name */}
                 <div>
                   <label className="label">Full Name *</label>
                   <input className="input" placeholder="e.g. Ahmed Khan" value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
                 </div>
 
-                {/* Username */}
                 <div>
                   <label className="label">Username * (used to log in)</label>
                   <input className="input" placeholder="e.g. ahmed" value={form.username}
                     onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
-                  {/* Username suggestions */}
                   {usernameSuggestions.length > 0 && !form.username && (
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Suggestions:</span>
@@ -252,13 +331,12 @@ export default function InvestorsAdmin() {
                   )}
                 </div>
 
-                {/* Password */}
                 <div className="sm:col-span-2">
-                  <label className="label">{editId ? 'New Password (leave blank to keep)' : 'Password *'}</label>
+                  <label className="label">{editId ? 'Password (current shown below)' : 'Password *'}</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <input className="input pr-10" type={showPass ? 'text' : 'password'}
-                        placeholder={editId ? '••••••••' : 'Set a strong password'}
+                        placeholder={editId ? 'Leave blank to keep current' : 'Set a strong password'}
                         value={form.password}
                         onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
                       <button type="button" onClick={() => setShowPass(!showPass)}
@@ -273,58 +351,35 @@ export default function InvestorsAdmin() {
                     </button>
                   </div>
 
-                  {/* Password strength bar */}
                   {passwordStrength && (
                     <div className="mt-2">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
-                          Password strength:
-                        </span>
-                        <span className="text-xs font-bold" style={{ color: passwordStrength.color }}>
-                          {passwordStrength.label}
-                        </span>
+                        <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Strength:</span>
+                        <span className="text-xs font-bold" style={{ color: passwordStrength.color }}>{passwordStrength.label}</span>
                       </div>
                       <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
                         <div className={`h-full rounded-full transition-all duration-500 ${passwordStrength.bg}`}
                           style={{ width: passwordStrength.width }} />
                       </div>
-                      {passwordStrength.label === 'Weak' && (
-                        <p className="text-xs mt-1 font-medium" style={{ color: '#dc2626' }}>
-                          Add uppercase letters, numbers and symbols
-                        </p>
-                      )}
-                      {passwordStrength.label === 'Fair' && (
-                        <p className="text-xs mt-1 font-medium" style={{ color: '#d97706' }}>
-                          Add more characters or special symbols
-                        </p>
-                      )}
                     </div>
                   )}
-
-                  {/* Password tips */}
                   {!form.password && !editId && (
                     <p className="text-xs mt-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>
-                      💡 Click ⚡ Generate for a strong password, or create one with 8+ chars, uppercase, number & symbol
+                      💡 Click ⚡ Generate for a strong auto-password
                     </p>
                   )}
                 </div>
 
-                {/* Share % */}
                 <div>
                   <label className="label">Share % (default 30)</label>
-                  <input className="input" type="number" min="1" max="100" step="0.5" placeholder="30"
-                    value={form.sharePercent}
+                  <input className="input" type="number" min="1" max="100" step="0.5" value={form.sharePercent}
                     onChange={e => setForm(f => ({ ...f, sharePercent: e.target.value }))} />
                 </div>
-
-                {/* Email */}
                 <div>
                   <label className="label">Email (optional)</label>
                   <input className="input" type="email" placeholder="investor@example.com" value={form.email}
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                 </div>
-
-                {/* Notes */}
                 <div className="sm:col-span-2">
                   <label className="label">Notes (optional)</label>
                   <input className="input" placeholder="e.g. Silent partner since 2024" value={form.notes}

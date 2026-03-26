@@ -4,7 +4,7 @@ import { requireAdmin } from '../../../lib/auth'
 
 function toClient(inv) {
   const { password_hash, ...safe } = inv
-  return { ...safe, sharePercent: inv.share_percent, createdAt: inv.created_at }
+  return { ...safe, sharePercent: inv.share_percent, createdAt: inv.created_at, plainPassword: inv.plain_password }
 }
 
 async function handler(req, res) {
@@ -24,6 +24,7 @@ async function handler(req, res) {
     const { data, error } = await supabase.from('investors').insert({
       name, username: username.toLowerCase(),
       password_hash: passwordHash,
+      plain_password: password,
       share_percent: parseFloat(sharePercent) || 30,
       email: email || '', notes: notes || '',
     }).select().single()
