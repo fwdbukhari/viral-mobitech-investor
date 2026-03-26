@@ -77,7 +77,7 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
     router.push('/login')
   }
 
-  const isActive = (href) => router.pathname === href || router.pathname.startsWith(href + '/')
+  const isActive = (href) => router.pathname === href || (href !== '/admin' && router.pathname.startsWith(href + '/'))
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-base)' }}>
