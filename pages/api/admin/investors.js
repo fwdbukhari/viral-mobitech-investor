@@ -1,68 +1,35 @@
 import bcrypt from 'bcryptjs'
-import redis from '../../../lib/redis'
+import { getSupabaseAdmin } from '../../../lib/supabase'
 import { requireAdmin } from '../../../lib/auth'
 
+function toClient(inv) {
+  const { password_hash, ...safe } = inv
+  return { ...safe, sharePercent: inv.share_percent, createdAt: inv.created_at }
+}
+
 async function handler(req, res) {
+  const supabase = getSupabaseAdmin()
+
   if (req.method === 'GET') {
-    try {
-      const investorIds = await redis.get('investors:list')
-      const list = Array.isArray(investorIds) ? investorIds : (investorIds ? JSON.parse(investorIds) : [])
-      const investors = []
-      for (const id of list) {
-        const inv = await redis.get(`investor:${id}`)
-        if (inv) {
-          const data = typeof inv === 'string' ? JSON.parse(inv) : inv
-          const { passwordHash, ...safe } = data
-          investors.push(safe)
-        }
-      }
-      return res.status(200).json(investors)
-    } catch (err) {
-      console.error(err)
-      return res.status(500).json({ error: 'Server error' })
-    }
+    const { data, error } = await supabase.from('investors').select('*').order('created_at')
+    if (error) return res.status(500).json({ error: error.message })
+    return res.status(200).json(data.map(toClient))
   }
 
   if (req.method === 'POST') {
-    try {
-      const { name, username, password, sharePercent, email, notes } = req.body
-      if (!name || !username || !password) {
-        return res.status(400).json({ error: 'name, username, and password are required' })
-      }
+    const { name, username, password, sharePercent, email, notes } = req.body
+    if (!name || !username || !password) return res.status(400).json({ error: 'name, username, and password required' })
 
-      // Check username uniqueness
-      const investorIds = await redis.get('investors:list')
-      const list = Array.isArray(investorIds) ? investorIds : (investorIds ? JSON.parse(investorIds) : [])
-      for (const id of list) {
-        const inv = await redis.get(`investor:${id}`)
-        if (inv) {
-          const data = typeof inv === 'string' ? JSON.parse(inv) : inv
-          if (data.username.toLowerCase() === username.toLowerCase()) {
-            return res.status(409).json({ error: 'Username already exists' })
-          }
-        }
-      }
+    const passwordHash = await bcrypt.hash(password, 10)
+    const { data, error } = await supabase.from('investors').insert({
+      name, username: username.toLowerCase(),
+      password_hash: passwordHash,
+      share_percent: parseFloat(sharePercent) || 30,
+      email: email || '', notes: notes || '',
+    }).select().single()
 
-      const id = `inv_${Date.now()}`
-      const passwordHash = await bcrypt.hash(password, 10)
-      const investor = {
-        id, name, username, passwordHash,
-        sharePercent: parseFloat(sharePercent) || 30,
-        email: email || '',
-        notes: notes || '',
-        createdAt: new Date().toISOString(),
-      }
-
-      await redis.set(`investor:${id}`, JSON.stringify(investor))
-      list.push(id)
-      await redis.set('investors:list', JSON.stringify(list))
-
-      const { passwordHash: _, ...safe } = investor
-      return res.status(201).json(safe)
-    } catch (err) {
-      console.error(err)
-      return res.status(500).json({ error: 'Server error' })
-    }
+    if (error) return res.status(error.code === '23505' ? 409 : 500).json({ error: error.message })
+    return res.status(201).json(toClient(data))
   }
 
   return res.status(405).end()

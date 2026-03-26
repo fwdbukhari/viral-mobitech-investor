@@ -1,22 +1,26 @@
 import bcrypt from 'bcryptjs'
-import redis from '../../../lib/redis'
+import { getSupabaseAdmin } from '../../../lib/supabase'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
-
   try {
-    // Only allow if admin not yet created
-    const existing = await redis.get('admin:credentials')
-    if (existing) {
-      return res.status(409).json({ error: 'Admin already set up' })
-    }
+    const supabase = getSupabaseAdmin()
+    const { data: existing } = await supabase
+      .from('admin_credentials')
+      .select('id')
+      .single()
+
+    if (existing) return res.status(409).json({ error: 'Admin already set up' })
 
     const username = process.env.ADMIN_USERNAME || 'admin'
     const password = process.env.ADMIN_PASSWORD || 'VMAdmin@2025'
     const passwordHash = await bcrypt.hash(password, 10)
 
-    await redis.set('admin:credentials', JSON.stringify({ username, passwordHash }))
+    const { error } = await supabase
+      .from('admin_credentials')
+      .insert({ username, password_hash: passwordHash })
 
+    if (error) throw error
     return res.status(200).json({ ok: true, message: 'Admin account created', username })
   } catch (err) {
     console.error('Setup error:', err)

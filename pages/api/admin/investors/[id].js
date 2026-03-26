@@ -1,51 +1,34 @@
 import bcrypt from 'bcryptjs'
-import redis from '../../../../lib/redis'
+import { getSupabaseAdmin } from '../../../../lib/supabase'
 import { requireAdmin } from '../../../../lib/auth'
+
+function toClient(inv) {
+  const { password_hash, ...safe } = inv
+  return { ...safe, sharePercent: inv.share_percent, createdAt: inv.created_at }
+}
 
 async function handler(req, res) {
   const { id } = req.query
+  const supabase = getSupabaseAdmin()
 
   if (req.method === 'PUT') {
-    try {
-      const inv = await redis.get(`investor:${id}`)
-      if (!inv) return res.status(404).json({ error: 'Investor not found' })
-      const existing = typeof inv === 'string' ? JSON.parse(inv) : inv
-
-      const { name, username, password, sharePercent, email, notes } = req.body
-      const updated = {
-        ...existing,
-        name: name || existing.name,
-        username: username || existing.username,
-        sharePercent: sharePercent !== undefined ? parseFloat(sharePercent) : existing.sharePercent,
-        email: email !== undefined ? email : existing.email,
-        notes: notes !== undefined ? notes : existing.notes,
-      }
-
-      if (password) {
-        updated.passwordHash = await bcrypt.hash(password, 10)
-      }
-
-      await redis.set(`investor:${id}`, JSON.stringify(updated))
-      const { passwordHash, ...safe } = updated
-      return res.status(200).json(safe)
-    } catch (err) {
-      console.error(err)
-      return res.status(500).json({ error: 'Server error' })
+    const { name, username, password, sharePercent, email, notes } = req.body
+    const updates = {
+      name, username: username?.toLowerCase(),
+      share_percent: parseFloat(sharePercent) || 30,
+      email: email || '', notes: notes || '',
     }
+    if (password) updates.password_hash = await bcrypt.hash(password, 10)
+
+    const { data, error } = await supabase.from('investors').update(updates).eq('id', id).select().single()
+    if (error) return res.status(500).json({ error: error.message })
+    return res.status(200).json(toClient(data))
   }
 
   if (req.method === 'DELETE') {
-    try {
-      await redis.del(`investor:${id}`)
-      const investorIds = await redis.get('investors:list')
-      const list = Array.isArray(investorIds) ? investorIds : (investorIds ? JSON.parse(investorIds) : [])
-      const updated = list.filter(i => i !== id)
-      await redis.set('investors:list', JSON.stringify(updated))
-      return res.status(200).json({ ok: true })
-    } catch (err) {
-      console.error(err)
-      return res.status(500).json({ error: 'Server error' })
-    }
+    const { error } = await supabase.from('investors').delete().eq('id', id)
+    if (error) return res.status(500).json({ error: error.message })
+    return res.status(200).json({ ok: true })
   }
 
   return res.status(405).end()

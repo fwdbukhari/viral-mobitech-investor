@@ -1,58 +1,5 @@
-import redis from '../../../lib/redis'
+import { getSupabaseAdmin } from '../../../lib/supabase'
 import { requireAdmin } from '../../../lib/auth'
-
-async function handler(req, res) {
-  if (req.method === 'GET') {
-    try {
-      const monthIds = await redis.get('months:list')
-      const list = Array.isArray(monthIds) ? monthIds : (monthIds ? JSON.parse(monthIds) : [])
-      list.sort()
-
-      const months = []
-      for (const id of list) {
-        const m = await redis.get(`month:${id}`)
-        if (m) months.push(typeof m === 'string' ? JSON.parse(m) : m)
-      }
-      return res.status(200).json(months)
-    } catch (err) {
-      console.error(err)
-      return res.status(500).json({ error: 'Server error' })
-    }
-  }
-
-  if (req.method === 'POST') {
-    try {
-      const data = req.body
-      if (!data.id || !data.month) return res.status(400).json({ error: 'id and month are required' })
-
-      // Check if already exists
-      const existing = await redis.get(`month:${data.id}`)
-      if (existing) return res.status(409).json({ error: 'Month already exists' })
-
-      // Compute derived fields
-      const month = computeMonth(data)
-
-      // Save month
-      await redis.set(`month:${data.id}`, JSON.stringify(month))
-
-      // Update list
-      const monthIds = await redis.get('months:list')
-      const list = Array.isArray(monthIds) ? monthIds : (monthIds ? JSON.parse(monthIds) : [])
-      if (!list.includes(data.id)) {
-        list.push(data.id)
-        list.sort()
-        await redis.set('months:list', JSON.stringify(list))
-      }
-
-      return res.status(201).json(month)
-    } catch (err) {
-      console.error(err)
-      return res.status(500).json({ error: 'Server error' })
-    }
-  }
-
-  return res.status(405).end()
-}
 
 function computeMonth(data) {
   const adsRevenue = parseFloat(data.adsRevenue) || 0
@@ -63,34 +10,27 @@ function computeMonth(data) {
   const pkrRate = parseFloat(data.pkrRate) || 280
   const aitInMarketing = data.aitInMarketing === true || data.aitInMarketing === 'true'
 
-  const totalIncome = aitInMarketing
-    ? adsRevenue + subscriptions
-    : adsRevenue + subscriptions - adjInvalidTraffic
-
-  const totalMarketing = aitInMarketing
-    ? adsSpend + taxes + adjInvalidTraffic
-    : adsSpend + taxes
-
+  const totalIncome = aitInMarketing ? adsRevenue + subscriptions : adsRevenue + subscriptions - adjInvalidTraffic
+  const totalMarketing = aitInMarketing ? adsSpend + taxes + adjInvalidTraffic : adsSpend + taxes
   const balance = totalIncome - totalMarketing
   const investorShare = parseFloat((balance * 0.30).toFixed(2))
-  const balancePKR = Math.round(balance * pkrRate)
-  const investorSharePKR = Math.round(investorShare * pkrRate)
 
   return {
     id: data.id,
     month: data.month,
-    fiscalYear: data.fiscalYear || getFiscalYear(data.id),
-    adsRevenue, subscriptions, adjInvalidTraffic, aitInMarketing,
-    totalIncome: parseFloat(totalIncome.toFixed(2)),
-    adsSpend, taxes,
-    totalMarketing: parseFloat(totalMarketing.toFixed(2)),
+    fiscal_year: data.fiscalYear || getFiscalYear(data.id),
+    ads_revenue: adsRevenue, subscriptions, adj_invalid_traffic: adjInvalidTraffic,
+    ait_in_marketing: aitInMarketing,
+    total_income: parseFloat(totalIncome.toFixed(2)),
+    ads_spend: adsSpend, taxes,
+    total_marketing: parseFloat(totalMarketing.toFixed(2)),
     balance: parseFloat(balance.toFixed(2)),
-    investorShare,
-    pkrRate,
-    balancePKR,
-    investorSharePKR,
-    paymentStatus: data.paymentStatus || 'Pending',
-    receiptUrl: data.receiptUrl || '',
+    investor_share: investorShare,
+    pkr_rate: pkrRate,
+    balance_pkr: Math.round(balance * pkrRate),
+    investor_share_pkr: Math.round(investorShare * pkrRate),
+    payment_status: data.paymentStatus || 'Pending',
+    receipt_url: data.receiptUrl || '',
   }
 }
 
@@ -98,6 +38,38 @@ function getFiscalYear(id) {
   const [year, month] = id.split('-').map(Number)
   if (month >= 7) return `${year}-${year + 1}`
   return `${year - 1}-${year}`
+}
+
+function toClient(m) {
+  return {
+    id: m.id, month: m.month, fiscalYear: m.fiscal_year,
+    adsRevenue: m.ads_revenue, subscriptions: m.subscriptions,
+    adjInvalidTraffic: m.adj_invalid_traffic, aitInMarketing: m.ait_in_marketing,
+    totalIncome: m.total_income, adsSpend: m.ads_spend, taxes: m.taxes,
+    totalMarketing: m.total_marketing, balance: m.balance,
+    investorShare: m.investor_share, pkrRate: m.pkr_rate,
+    balancePKR: m.balance_pkr, investorSharePKR: m.investor_share_pkr,
+    paymentStatus: m.payment_status, receiptUrl: m.receipt_url,
+  }
+}
+
+async function handler(req, res) {
+  const supabase = getSupabaseAdmin()
+
+  if (req.method === 'GET') {
+    const { data, error } = await supabase.from('months').select('*').order('id')
+    if (error) return res.status(500).json({ error: error.message })
+    return res.status(200).json(data.map(toClient))
+  }
+
+  if (req.method === 'POST') {
+    const row = computeMonth(req.body)
+    const { data, error } = await supabase.from('months').insert(row).select().single()
+    if (error) return res.status(error.code === '23505' ? 409 : 500).json({ error: error.message })
+    return res.status(201).json(toClient(data))
+  }
+
+  return res.status(405).end()
 }
 
 export default requireAdmin(handler)
