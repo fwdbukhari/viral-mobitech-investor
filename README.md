@@ -33,3 +33,4 @@ Log in as admin → Overview → click **⚡ Seed Historical Data**
 ## Accounts
 - Admin: `admin` / `VMAdmin@2025`
 - Investors: managed via Admin → Investors panel
+# Viral Mobitech Investor Portal — Thu Mar 26 11:29:12 UTC 2026
