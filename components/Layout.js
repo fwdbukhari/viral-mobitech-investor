@@ -45,7 +45,7 @@ function ThemeSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--bg-base)' }}>
+    <div className="flex items-center gap-0.5 p-1 rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--bg-base)' }}>
       {[
         { key: 'light', icon: <SunIcon />, label: 'Light' },
         { key: 'dark', icon: <MoonIcon />, label: 'Dark' },
@@ -55,12 +55,10 @@ function ThemeSwitcher() {
           key={key}
           onClick={() => set(key)}
           title={label}
-          className={`p-1.5 rounded-md transition-all duration-200 ${
-            theme === key
-              ? 'bg-gold-500/20 text-gold-400'
-              : 'text-gray-500 hover:text-gray-300'
-          }`}
-        >
+          className="p-1.5 rounded-md transition-all duration-200"
+          style={theme === key
+            ? { background: 'linear-gradient(135deg, #b8860b, #d4a017)', color: '#fff' }
+            : { color: 'var(--text-muted)' }}>
           {icon}
         </button>
       ))}
@@ -88,11 +86,11 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
         <div className="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href={user?.role === 'admin' ? '/admin' : '/investor'} className="flex items-center gap-2.5 shrink-0">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #d4a853, #f0d080)' }}>
-              <span className="text-xs font-bold text-yellow-900">VM</span>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm"
+              style={{ background: 'linear-gradient(135deg, #b8860b, #d4a017)' }}>
+              <span className="text-xs font-bold text-white">VM</span>
             </div>
-            <span className="font-display text-sm font-semibold hidden sm:block" style={{ color: 'var(--text-primary)' }}>
+            <span className="font-display text-sm font-bold hidden sm:block" style={{ color: 'var(--text-primary)' }}>
               Viral Mobitech
             </span>
           </Link>
@@ -101,11 +99,10 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {navLinks?.map(({ href, label, icon }) => (
               <Link key={href} href={href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive(href)
-                    ? 'bg-gold-500/10 text-gold-400'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}>
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  isActive(href) ? 'nav-active' : ''
+                }`}
+                style={!isActive(href) ? { color: 'var(--text-secondary)' } : {}}>
                 <span>{icon}</span>
                 <span>{label}</span>
               </Link>
@@ -116,13 +113,13 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
           <div className="flex items-center gap-3">
             <ThemeSwitcher />
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{user?.name}</span>
-              <span className="text-xs capitalize" style={{ color: 'var(--text-muted)' }}>{user?.role}</span>
+              <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{user?.name}</span>
+              <span className="text-xs font-medium capitalize" style={{ color: 'var(--text-muted)' }}>{user?.role}</span>
             </div>
-            <button onClick={handleLogout} className="btn-ghost text-xs px-3 py-1.5 hidden sm:flex">
+            <button onClick={handleLogout}
+              className="btn-ghost text-xs px-3 py-1.5 hidden sm:flex font-semibold">
               Sign Out
             </button>
-            {/* Mobile menu toggle */}
             <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-1.5 rounded-lg"
               style={{ color: 'var(--text-secondary)' }}>
               {mobileOpen ? <CloseIcon /> : <MenuIcon />}
@@ -135,14 +132,13 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
           <div className="md:hidden border-t px-4 py-3 flex flex-col gap-1" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}>
             {navLinks?.map(({ href, label, icon }) => (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${
-                  isActive(href) ? 'bg-gold-500/10 text-gold-400' : 'text-gray-400'
-                }`}>
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold ${isActive(href) ? 'nav-active' : ''}`}
+                style={!isActive(href) ? { color: 'var(--text-secondary)' } : {}}>
                 <span>{icon}</span><span>{label}</span>
               </Link>
             ))}
             <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{user?.name}</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{user?.name}</span>
               <button onClick={handleLogout} className="btn-ghost text-xs px-3 py-1.5">Sign Out</button>
             </div>
           </div>
@@ -154,7 +150,7 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
         {children}
       </main>
 
-      <footer className="border-t py-4 text-center text-xs" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+      <footer className="border-t py-4 text-center text-xs font-medium" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
         © {new Date().getFullYear()} Viral Mobitech — Investor Portal
       </footer>
     </div>

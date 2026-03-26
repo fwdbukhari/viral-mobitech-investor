@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --bg-base: #f5f5f0;
+    --bg-base: #f0f0e8;
     --bg-card: #ffffff;
-    --bg-card-hover: #f8f8f5;
-    --border: #e5e5de;
-    --text-primary: #1a1c22;
-    --text-secondary: #5a5e72;
-    --text-muted: #9499b0;
+    --bg-card-hover: #f8f8f4;
+    --border: #d0d0c4;
+    --text-primary: #111118;
+    --text-secondary: #3a3a48;
+    --text-muted: #6b6b7a;
   }
 
   .dark {
@@ -58,6 +58,11 @@
 
   .btn-gold {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
+    background: linear-gradient(135deg, #b8860b 0%, #d4a017 100%);
+    color: #ffffff;
+  }
+
+  .dark .btn-gold {
     background: linear-gradient(135deg, #d4a853 0%, #f0d080 100%);
     color: #1a1208;
   }
@@ -75,16 +80,32 @@
   }
 
   .btn-ghost:hover {
+    border-color: theme('colors.gold.600');
+    color: theme('colors.gold.600');
+  }
+
+  .dark .btn-ghost:hover {
     border-color: theme('colors.gold.500');
     color: theme('colors.gold.500');
   }
 
   .btn-danger {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-red-400 border border-red-900 bg-transparent;
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 border bg-transparent;
+    color: #c0392b;
+    border-color: #e8b4b0;
+  }
+
+  .dark .btn-danger {
+    color: #fc8181;
+    border-color: #742a2a;
   }
 
   .btn-danger:hover {
-    @apply bg-red-900/20;
+    background: #fdf0ef;
+  }
+
+  .dark .btn-danger:hover {
+    background: rgba(127, 29, 29, 0.2);
   }
 
   .input {
@@ -95,32 +116,74 @@
   }
 
   .input:focus {
+    border-color: theme('colors.gold.600');
+    box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.12);
+  }
+
+  .dark .input:focus {
     border-color: theme('colors.gold.500');
     box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
   }
 
   .label {
-    @apply block text-xs font-medium mb-1.5 uppercase tracking-wider;
+    @apply block text-xs font-semibold mb-1.5 uppercase tracking-wider;
     color: var(--text-muted);
   }
 
   .badge-received {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900/30 text-emerald-400 border border-emerald-800/50;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  .dark .badge-received {
+    background: rgba(6, 78, 59, 0.3);
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.3);
   }
 
   .badge-pending {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-900/30 text-amber-400 border border-amber-800/50;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+  }
+
+  .dark .badge-pending {
+    background: rgba(120, 53, 15, 0.3);
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.3);
   }
 
   .table-row-hover:hover {
     background-color: var(--bg-card-hover);
   }
 
+  /* Gold text — darker in light mode for readability */
   .gold-text {
+    background: linear-gradient(135deg, #8a6200 0%, #b8860b 50%, #8a6200 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dark .gold-text {
     background: linear-gradient(135deg, #d4a853 0%, #f0d080 50%, #d4a853 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Nav active state */
+  .nav-active {
+    background: rgba(184, 134, 11, 0.12);
+    color: #8a6200 !important;
+  }
+
+  .dark .nav-active {
+    background: rgba(212, 168, 83, 0.1);
+    color: #d4a853 !important;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -135,5 +198,30 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 2px;
+  }
+
+  /* Ensure good contrast for emerald in light mode */
+  .text-emerald-400 {
+    color: #059669 !important;
+  }
+
+  .dark .text-emerald-400 {
+    color: #34d399 !important;
+  }
+
+  .text-amber-400 {
+    color: #d97706 !important;
+  }
+
+  .dark .text-amber-400 {
+    color: #fbbf24 !important;
+  }
+
+  .text-red-400 {
+    color: #dc2626 !important;
+  }
+
+  .dark .text-red-400 {
+    color: #f87171 !important;
   }
 }
