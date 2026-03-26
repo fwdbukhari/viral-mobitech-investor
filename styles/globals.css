@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-base: #f5f5f0;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8f8f5;
+    --border: #e5e5de;
+    --text-primary: #1a1c22;
+    --text-secondary: #5a5e72;
+    --text-muted: #9499b0;
+  }
+
+  .dark {
+    --bg-base: #0a0d12;
+    --bg-card: #111520;
+    --bg-card-hover: #161b28;
+    --border: #1e2540;
+    --text-primary: #e8ecf5;
+    --text-secondary: #8b91aa;
+    --text-muted: #4b5066;
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border p-5;
+    background-color: var(--bg-card);
+    border-color: var(--border);
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200;
+  }
+
+  .card-hover:hover {
+    background-color: var(--bg-card-hover);
+    border-color: theme('colors.gold.500');
+    transform: translateY(-1px);
+    box-shadow: 0 4px 24px rgba(212, 168, 83, 0.08);
+  }
+
+  .stat-card {
+    @apply card p-5 flex flex-col gap-2;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
+    background: linear-gradient(135deg, #d4a853 0%, #f0d080 100%);
+    color: #1a1208;
+  }
+
+  .btn-gold:hover {
+    box-shadow: 0 0 20px rgba(212, 168, 83, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    background: transparent;
+  }
+
+  .btn-ghost:hover {
+    border-color: theme('colors.gold.500');
+    color: theme('colors.gold.500');
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-red-400 border border-red-900 bg-transparent;
+  }
+
+  .btn-danger:hover {
+    @apply bg-red-900/20;
+  }
+
+  .input {
+    @apply w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-all duration-200;
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+
+  .input:focus {
+    border-color: theme('colors.gold.500');
+    box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
+  }
+
+  .label {
+    @apply block text-xs font-medium mb-1.5 uppercase tracking-wider;
+    color: var(--text-muted);
+  }
+
+  .badge-received {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900/30 text-emerald-400 border border-emerald-800/50;
+  }
+
+  .badge-pending {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-900/30 text-amber-400 border border-amber-800/50;
+  }
+
+  .table-row-hover:hover {
+    background-color: var(--bg-card-hover);
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, #d4a853 0%, #f0d080 50%, #d4a853 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+}
