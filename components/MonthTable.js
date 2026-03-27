@@ -56,7 +56,7 @@ async function downloadPDF(months, currency) {
   doc.save(`vm-investor-report-${currency}.pdf`)
 }
 
-export default function MonthTable({ months, currency, isAdmin=false, onStatusChange }) {
+export default function MonthTable({ months, currency, isAdmin=false, onStatusChange, sharePercent=30 }) {
   const [expanded, setExpanded] = useState(null)
   const [showAll, setShowAll] = useState(false)
   const { c } = useTheme()
@@ -97,7 +97,7 @@ export default function MonthTable({ months, currency, isAdmin=false, onStatusCh
           <table style={{width:'100%',borderCollapse:'collapse'}}>
             <thead>
               <tr>
-                {['Month','Total Income','Marketing','Balance','Your Share (30%)','Status',''].map(h=>(
+                {['Month','Total Income','Marketing','Balance',`Your Share (${sharePercent}%)`,'Status',''].map(h=>(
                   <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
