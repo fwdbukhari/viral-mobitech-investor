@@ -43,6 +43,7 @@ export default function DataEntry() {
   const [computed, setComputed] = useState(null)
   const [saving, setSaving] = useState(false)
   const [clearing, setClearing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -174,6 +175,25 @@ export default function DataEntry() {
     finally { setClearing(false) }
   }
 
+  // Delete record completely from database
+  async function handleDelete() {
+    if (!isEdit) return
+    if (!window.confirm(`Permanently delete ${monthName}? This cannot be undone.`)) return
+    setDeleting(true); setError(''); setSuccess('')
+    try {
+      const res = await fetch(`/api/admin/months/${monthId}`, { method: 'DELETE' })
+      if (!res.ok) { const d = await res.json(); setError(d.error || 'Delete failed') }
+      else {
+        setExistingMonths(prev => prev.filter(m => m.id !== monthId))
+        setEditId('')
+        setForm(f => ({ ...f, adsRevenue: '', subscriptions: '', adjInvalidTraffic: '', adsSpend: '', taxes: '', pkrRate: '283', aitInMarketing: false, paymentStatus: 'Pending', receiptUrl: '' }))
+        setSuccess(`${monthName} deleted successfully.`)
+        setTimeout(() => setSuccess(''), 4000)
+      }
+    } catch { setError('Connection error') }
+    finally { setDeleting(false) }
+  }
+
   const field = (label, key, type = 'number', placeholder = '') => (
     <div>
       <label className="label">{label}</label>
@@ -248,16 +268,16 @@ export default function DataEntry() {
               <div style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10,
                 padding: '12px 16px', borderRadius: 10, marginBottom: 20,
-                background: c.isLight ? 'rgba(180,83,9,0.08)' : 'rgba(251,191,36,0.08)',
-                border: `1.5px solid ${c.isLight ? 'rgba(180,83,9,0.4)' : 'rgba(251,191,36,0.45)'}`,
-                boxShadow: `0 0 12px ${c.isLight ? 'rgba(180,83,9,0.1)' : 'rgba(251,191,36,0.1)'}`,
+                background: 'rgba(251,191,36,0.1)',
+                border: '1.5px solid rgba(251,191,36,0.5)',
+                boxShadow: '0 0 14px rgba(251,191,36,0.12)',
               }}>
                 <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠️</span>
                 <div>
-                  <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.5, color: c.isLight ? '#7c3500' : '#fbbf24', marginBottom: 3 }}>
+                  <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.5, color: '#d97706', marginBottom: 3 }}>
                     Month Already Exists
                   </p>
-                  <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.82rem', color: c.isLight ? '#92400e' : '#fde68a' }}>
+                  <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', color: c.isLight ? '#92400e' : '#fde68a', margin: 0 }}>
                     <strong>{monthName}</strong> already exists. Use the <strong>"Edit Existing Month"</strong> selector above to modify it.
                   </p>
                 </div>
@@ -386,26 +406,43 @@ export default function DataEntry() {
                 {saving ? '⏳ Saving…' : isEdit ? '✓ Update Month' : '+ Save New Month'}
               </button>
 
-              {/* Fix 2: Clear Record — only shown in edit mode */}
+              {/* Clear Record + Delete Record — edit mode only */}
               {isEdit && (
-                <button
-                  onClick={handleClear}
-                  disabled={clearing}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '12px 20px', borderRadius: 8, cursor: clearing ? 'not-allowed' : 'pointer',
-                    fontFamily: 'Exo 2, sans-serif', fontSize: '0.88rem', fontWeight: 600,
-                    background: 'transparent',
-                    color: c.isLight ? '#dc2626' : '#f87171',
-                    border: `1.5px solid ${c.isLight ? 'rgba(220,38,38,0.35)' : 'rgba(248,113,113,0.35)'}`,
-                    transition: '0.2s ease',
-                    opacity: clearing ? 0.6 : 1,
-                    whiteSpace: 'nowrap',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = c.isLight ? 'rgba(220,38,38,0.06)' : 'rgba(248,113,113,0.08)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
-                  {clearing ? '⏳ Clearing…' : '🗑 Clear Record'}
-                </button>
+                <>
+                  <button
+                    onClick={handleClear}
+                    disabled={clearing || deleting}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: '12px 16px', borderRadius: 8, cursor: clearing ? 'not-allowed' : 'pointer',
+                      fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', fontWeight: 600,
+                      background: 'transparent',
+                      color: c.isLight ? '#d97706' : '#fbbf24',
+                      border: `1.5px solid ${c.isLight ? 'rgba(217,119,6,0.35)' : 'rgba(251,191,36,0.35)'}`,
+                      transition: '0.2s ease', opacity: clearing ? 0.6 : 1, whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = c.isLight ? 'rgba(217,119,6,0.06)' : 'rgba(251,191,36,0.08)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                    {clearing ? '⏳ Clearing…' : '🔄 Clear Data'}
+                  </button>
+
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting || clearing}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: '12px 16px', borderRadius: 8, cursor: deleting ? 'not-allowed' : 'pointer',
+                      fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', fontWeight: 600,
+                      background: 'transparent',
+                      color: c.isLight ? '#dc2626' : '#f87171',
+                      border: `1.5px solid ${c.isLight ? 'rgba(220,38,38,0.35)' : 'rgba(248,113,113,0.35)'}`,
+                      transition: '0.2s ease', opacity: deleting ? 0.6 : 1, whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = c.isLight ? 'rgba(220,38,38,0.06)' : 'rgba(248,113,113,0.08)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                    {deleting ? '⏳ Deleting…' : '🗑 Delete Record'}
+                  </button>
+                </>
               )}
             </div>
           </div>

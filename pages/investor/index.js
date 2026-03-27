@@ -73,7 +73,8 @@ export default function InvestorDashboard() {
   const totalBalance = filtered.reduce((s, m) => s + (currency === 'PKR' ? m.balancePKR : m.balance), 0)
   const totalShare = filtered.reduce((s, m) => s + (currency === 'PKR' ? m.investorSharePKR : m.investorShare), 0)
   const totalIncome = filtered.reduce((s, m) => s + (currency === 'PKR' ? Math.round(m.totalIncome * m.pkrRate) : m.totalIncome), 0)
-  const avgROI = filtered.length > 0 ? filtered.reduce((s, m) => s + (m.balance / m.totalMarketing) * 100, 0) / filtered.length : 0
+  const validForROI = filtered.filter(m => m.totalMarketing > 0)
+  const avgROI = validForROI.length > 0 ? validForROI.reduce((s, m) => s + (m.balance / m.totalMarketing) * 100, 0) / validForROI.length : 0
   const received = filtered.filter(m => m.paymentStatus === 'Received')
   const pending = filtered.filter(m => m.paymentStatus === 'Pending')
   const totalReceived = received.reduce((s, m) => s + (currency === 'PKR' ? m.investorSharePKR : m.investorShare), 0)
