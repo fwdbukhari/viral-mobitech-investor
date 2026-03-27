@@ -98,14 +98,20 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
 
           <Link href={user?.role === 'admin' ? '/admin' : '/investor'}
             style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: 'linear-gradient(135deg, #1e6fff, #00c8ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 16px rgba(0,200,255,0.35)',
-            }}>
-              <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: 12, color: '#fff' }}>VM</span>
-            </div>
+            {/* Real Viral Mobitech logo — dark version for dark bg nav, light for light mode */}
+            <img
+              src={c.isLight ? '/logo-light.png' : '/logo-dark.png'}
+              alt="Viral Mobitech"
+              style={{
+                width: 40, height: 40,
+                borderRadius: 8,
+                objectFit: 'cover',
+                boxShadow: c.isLight
+                  ? '0 2px 10px rgba(30,111,255,0.2)'
+                  : '0 0 16px rgba(0,200,255,0.3)',
+                flexShrink: 0,
+              }}
+            />
             <div className="hidden sm:block">
               <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: '0.95rem', color: c.textPrimary }}>
                 Viral<span style={{ color: c.cyan }}>Mobitech</span>

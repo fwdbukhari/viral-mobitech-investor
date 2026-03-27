@@ -51,14 +51,18 @@ export default function Login() {
         <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: 36 }} className="fade-up">
-            <div style={{
-              width: 60, height: 60, borderRadius: 16, margin: '0 auto 14px',
-              background: 'linear-gradient(135deg, #1e6fff, #00c8ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 35px rgba(0,200,255,0.45)',
-            }}>
-              <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 900, fontSize: 18, color: '#fff' }}>VM</span>
-            </div>
+            <img
+              src="/logo-dark.png"
+              alt="Viral Mobitech"
+              style={{
+                width: 80, height: 80,
+                borderRadius: 18,
+                objectFit: 'cover',
+                margin: '0 auto 14px',
+                display: 'block',
+                boxShadow: '0 0 35px rgba(0,200,255,0.45)',
+              }}
+            />
 
             {/* Blinking badge */}
             <div className="hero-badge" style={{ margin: '0 auto 16px', width: 'fit-content' }}>
