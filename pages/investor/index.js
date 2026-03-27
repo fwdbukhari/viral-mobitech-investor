@@ -40,6 +40,7 @@ export default function InvestorDashboard() {
   const [fiscalYear, setFiscalYear] = useState('all')
   const [sharePercent, setSharePercent] = useState(30) // Fix 3: track actual share %
   const { c } = useTheme()
+  const [showGraph, setShowGraph] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -145,10 +146,29 @@ export default function InvestorDashboard() {
 
         {/* Chart */}
         <div className="card" style={{ marginBottom: 18 }}>
-          <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', color: c.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16 }}>Revenue Overview</p>
-          {filtered.length > 0
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showGraph ? 16 : 0 }}>
+            <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', color: c.textMuted, letterSpacing: 1, textTransform: 'uppercase', margin: 0 }}>Revenue Overview</p>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
+              <span style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.78rem', color: c.textMuted }}>Show graph</span>
+              <div onClick={() => setShowGraph(!showGraph)}
+                style={{
+                  width: 36, height: 20, borderRadius: 10, cursor: 'pointer', flexShrink: 0,
+                  background: showGraph ? 'linear-gradient(135deg, #1e6fff, #00c8ff)' : (c.isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)'),
+                  position: 'relative', transition: '0.25s ease',
+                  boxShadow: showGraph ? '0 0 10px rgba(0,200,255,0.35)' : 'none',
+                }}>
+                <div style={{
+                  position: 'absolute', top: 2, left: showGraph ? 18 : 2,
+                  width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                  transition: '0.25s ease',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                }} />
+              </div>
+            </label>
+          </div>
+          {showGraph && (filtered.length > 0
             ? <RevenueChart months={filtered} currency={currency} />
-            : <p style={{ textAlign: 'center', color: c.textMuted, padding: '40px 0', fontFamily: 'Exo 2, sans-serif' }}>No data for selected period</p>}
+            : <p style={{ textAlign: 'center', color: c.textMuted, padding: '40px 0', fontFamily: 'Exo 2, sans-serif' }}>No data for selected period</p>)}
         </div>
 
         {/* Table — Fix 3: pass sharePercent so column header shows correct % */}

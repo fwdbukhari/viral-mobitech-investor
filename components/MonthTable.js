@@ -63,14 +63,14 @@ export default function MonthTable({ months, currency, isAdmin=false, onStatusCh
 
   const displayed = showAll ? months : months.slice(-6).reverse()
 
+  // Header always dark bg — text always white regardless of page theme
   const thStyle = {
     padding:'11px 16px', textAlign:'left',
     fontFamily:'Orbitron, monospace', fontSize:'0.58rem', fontWeight:600,
-    letterSpacing:'1.2px', textTransform:'uppercase', color: c.textMuted,
-    borderBottom: c.isLight
-      ? '2px solid rgba(30,111,255,0.22)'
-      : '1px solid rgba(0,200,255,0.25)',
-    background: c.isLight ? 'rgba(220,232,255,0.6)' : 'rgba(1,10,30,0.85)',
+    letterSpacing:'1.2px', textTransform:'uppercase',
+    color: '#ffffff',
+    borderBottom: '1px solid rgba(0,200,255,0.3)',
+    background: '#0d1830',
     whiteSpace:'nowrap',
   }
   const td = (extra={}) => ({

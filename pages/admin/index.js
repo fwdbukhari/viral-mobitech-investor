@@ -19,6 +19,7 @@ const fmt = (n, currency) => currency === 'PKR'
 
 function CurrencyToggle({ currency, setCurrency }) {
   const { c } = useTheme()
+  const [showGraph, setShowGraph] = useState(true)
   return (
     <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: `1px solid ${c.cardBorder}` }}>
       {['USD', 'PKR'].map(cur => (
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [fiscalYear, setFiscalYear] = useState('all')
   const { c } = useTheme()
+  const [showGraph, setShowGraph] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -149,8 +151,27 @@ export default function AdminDashboard() {
 
             {/* Chart */}
             <div className="card" style={{ marginBottom: 18 }}>
-              <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', color: c.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16 }}>Revenue Overview</p>
-              <RevenueChart months={filtered} currency={currency} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showGraph ? 16 : 0 }}>
+                <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.65rem', color: c.textMuted, letterSpacing: 1, textTransform: 'uppercase', margin: 0 }}>Revenue Overview</p>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
+                  <span style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.78rem', color: c.textMuted }}>Show graph</span>
+                  <div onClick={() => setShowGraph(!showGraph)}
+                    style={{
+                      width: 36, height: 20, borderRadius: 10, cursor: 'pointer', flexShrink: 0,
+                      background: showGraph ? 'linear-gradient(135deg, #1e6fff, #00c8ff)' : (c.isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)'),
+                      position: 'relative', transition: '0.25s ease',
+                      boxShadow: showGraph ? '0 0 10px rgba(0,200,255,0.35)' : 'none',
+                    }}>
+                    <div style={{
+                      position: 'absolute', top: 2, left: showGraph ? 18 : 2,
+                      width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                      transition: '0.25s ease',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }} />
+                  </div>
+                </label>
+              </div>
+              {showGraph && <RevenueChart months={filtered} currency={currency} />}
             </div>
 
             {/* Table */}
