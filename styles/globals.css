@@ -287,3 +287,66 @@
   .text-amber-400   { color: #fbbf24 !important; }
   .text-red-400     { color: #f87171 !important; }
 }
+
+/* ══════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   Applied via .light-mode on <html>
+══════════════════════════════════════════ */
+html.light-mode {
+  --white:   #1a1c2e;
+  --muted:   #4a5568;
+  --border:  rgba(30, 111, 255, 0.18);
+  --card-bg: rgba(255, 255, 255, 0.85);
+}
+
+html.light-mode body {
+  background: linear-gradient(160deg, #eef2ff 0%, #e8f0fe 50%, #f0f4ff 100%);
+}
+
+html.light-mode body::after {
+  background-image:
+    linear-gradient(rgba(30,111,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,111,255,0.04) 1px, transparent 1px);
+}
+
+html.light-mode .card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(30, 111, 255, 0.15);
+  box-shadow: 0 2px 16px rgba(30,111,255,0.06);
+}
+
+html.light-mode .input {
+  background: rgba(240, 244, 255, 0.8);
+  border-color: rgba(30, 111, 255, 0.2);
+  color: #1a1c2e;
+}
+
+html.light-mode .input::placeholder { color: #8899bb; }
+
+html.light-mode select.input option { background: #eef2ff; color: #1a1c2e; }
+
+html.light-mode .btn-ghost {
+  color: #2d3748;
+  border-color: rgba(30,111,255,0.25);
+}
+html.light-mode .btn-ghost:hover { border-color: #1e6fff; color: #1e6fff; }
+
+html.light-mode .label { color: #5a7abf; }
+
+html.light-mode .badge-received {
+  background: rgba(52,211,153,0.12);
+  color: #065f46;
+  border-color: rgba(52,211,153,0.35);
+}
+html.light-mode .badge-pending {
+  background: rgba(251,191,36,0.12);
+  color: #7c5a00;
+  border-color: rgba(251,191,36,0.35);
+}
+
+html.light-mode .table-row-hover:hover { background: rgba(30,111,255,0.04); }
+
+/* Text colors in light mode */
+html.light-mode .text-emerald-400 { color: #059669 !important; }
+html.light-mode .text-amber-400   { color: #b45309 !important; }
+html.light-mode .text-red-400     { color: #dc2626 !important; }
