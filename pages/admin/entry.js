@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
+import { useTheme } from '../../lib/theme'
 
 const NAV = [
   { href: '/admin', label: 'Overview', icon: '◉' },
@@ -22,6 +23,7 @@ function getFiscalYear(year, month) {
 
 export default function DataEntry() {
   const router = useRouter()
+  const { c } = useTheme()
   const [user, setUser] = useState(null)
   const [existingMonths, setExistingMonths] = useState([])
   const [editId, setEditId] = useState('')
@@ -40,6 +42,7 @@ export default function DataEntry() {
   })
   const [computed, setComputed] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [clearing, setClearing] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -103,15 +106,13 @@ export default function DataEntry() {
   const monthName = `${MONTH_NAMES[form.month - 1]} ${form.year}`
   const isEdit = !!editId
   const existingIds = existingMonths.map(m => m.id)
+  const monthAlreadyExists = !isEdit && existingIds.includes(monthId)
 
   async function handleSave() {
-    setSaving(true)
-    setError('')
-    setSuccess('')
+    setSaving(true); setError(''); setSuccess('')
     try {
       const payload = {
-        id: monthId,
-        month: monthName,
+        id: monthId, month: monthName,
         fiscalYear: getFiscalYear(form.year, form.month),
         adsRevenue: parseFloat(form.adsRevenue) || 0,
         subscriptions: parseFloat(form.subscriptions) || 0,
@@ -123,16 +124,10 @@ export default function DataEntry() {
         paymentStatus: form.paymentStatus,
         receiptUrl: form.receiptUrl,
       }
-
       const url = isEdit ? `/api/admin/months/${monthId}` : '/api/admin/months'
       const method = isEdit ? 'PUT' : 'POST'
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await res.json()
-
       if (!res.ok) {
         setError(data.error || 'Save failed')
       } else {
@@ -141,22 +136,49 @@ export default function DataEntry() {
           isEdit ? prev.map(m => m.id === monthId ? data : m) : [...prev, data].sort((a, b) => a.id.localeCompare(b.id))
         )
         if (!isEdit) setEditId(monthId)
+        // Auto-clear success after 4s
+        setTimeout(() => setSuccess(''), 4000)
       }
-    } catch (err) {
-      setError('Connection error')
-    } finally {
-      setSaving(false)
-    }
+    } catch { setError('Connection error') }
+    finally { setSaving(false) }
+  }
+
+  // Fix 2: Clear Record — zeros out all fields for the selected month
+  async function handleClear() {
+    if (!isEdit) return
+    if (!window.confirm(`Clear all data for ${monthName}? This will zero out all values but keep the month record.`)) return
+    setClearing(true); setError(''); setSuccess('')
+    try {
+      const payload = {
+        id: monthId, month: monthName,
+        fiscalYear: getFiscalYear(form.year, form.month),
+        adsRevenue: 0, subscriptions: 0, adjInvalidTraffic: 0,
+        adsSpend: 0, taxes: 0,
+        pkrRate: parseFloat(form.pkrRate) || 280,
+        aitInMarketing: false,
+        paymentStatus: 'Pending',
+        receiptUrl: '',
+      }
+      const res = await fetch(`/api/admin/months/${monthId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Clear failed') }
+      else {
+        setForm(f => ({ ...f, adsRevenue: 0, subscriptions: 0, adjInvalidTraffic: 0, adsSpend: 0, taxes: 0, aitInMarketing: false, paymentStatus: 'Pending', receiptUrl: '' }))
+        setExistingMonths(prev => prev.map(m => m.id === monthId ? data : m))
+        setSuccess('Record cleared successfully.')
+        setTimeout(() => setSuccess(''), 4000)
+      }
+    } catch { setError('Connection error') }
+    finally { setClearing(false) }
   }
 
   const field = (label, key, type = 'number', placeholder = '') => (
     <div>
       <label className="label">{label}</label>
       <input
-        className="input"
-        type={type}
-        step="0.01"
-        placeholder={placeholder}
+        className="input" type={type} step="0.01" placeholder={placeholder}
         value={form[key]}
         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
       />
@@ -167,24 +189,25 @@ export default function DataEntry() {
     <>
       <Head><title>Data Entry — Admin</title></Head>
       <Layout user={user} adminLinks={NAV} investorLinks={NAV}>
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <div>
-              <h1 className="font-display text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
+              <h1 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.4rem', fontWeight: 700, color: c.textPrimary, margin: 0 }}>
                 Monthly Data Entry
               </h1>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: '0.82rem', color: c.textMuted, marginTop: 5, fontFamily: 'Exo 2, sans-serif' }}>
                 Add or edit monthly revenue data
               </p>
             </div>
-            <Link href="/admin" className="btn-ghost text-sm">← Back</Link>
+            <Link href="/admin" className="btn-ghost" style={{ padding: '8px 18px', fontSize: '0.82rem' }}>← Back</Link>
           </div>
 
           {/* Edit existing selector */}
           {existingMonths.length > 0 && (
-            <div className="card mb-5">
+            <div className="card" style={{ marginBottom: 16 }}>
               <label className="label">Edit Existing Month</label>
-              <select className="input" value={editId} onChange={e => setEditId(e.target.value)}>
+              <select className="input" value={editId} onChange={e => { setEditId(e.target.value); setError(''); setSuccess('') }}>
                 <option value="">— Add new month —</option>
                 {[...existingMonths].reverse().map(m => (
                   <option key={m.id} value={m.id}>{m.month}</option>
@@ -194,12 +217,12 @@ export default function DataEntry() {
           )}
 
           <div className="card">
-            <h2 className="text-sm font-semibold mb-5" style={{ color: 'var(--text-secondary)' }}>
+            <h2 style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.95rem', fontWeight: 700, color: c.textPrimary, marginBottom: 20, marginTop: 0 }}>
               {isEdit ? `Editing: ${monthName}` : 'New Month Entry'}
             </h2>
 
             {/* Month / Year picker */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
               <div>
                 <label className="label">Year</label>
                 <select className="input" value={form.year}
@@ -220,57 +243,66 @@ export default function DataEntry() {
               </div>
             </div>
 
-            {!isEdit && existingIds.includes(monthId) && (
-              <div className="text-xs px-3 py-2 rounded-lg bg-amber-900/20 border border-amber-800/40 text-amber-400 mb-4">
-                ⚠️ {monthName} already exists. Use the "Edit Existing Month" selector above to modify it.
+            {/* Fix 3: Month already exists warning — bold and prominent */}
+            {monthAlreadyExists && (
+              <div style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                padding: '12px 16px', borderRadius: 10, marginBottom: 20,
+                background: c.isLight ? 'rgba(180,83,9,0.08)' : 'rgba(251,191,36,0.08)',
+                border: `1.5px solid ${c.isLight ? 'rgba(180,83,9,0.4)' : 'rgba(251,191,36,0.45)'}`,
+                boxShadow: `0 0 12px ${c.isLight ? 'rgba(180,83,9,0.1)' : 'rgba(251,191,36,0.1)'}`,
+              }}>
+                <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+                <div>
+                  <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.5, color: c.isLight ? '#7c3500' : '#fbbf24', marginBottom: 3 }}>
+                    Month Already Exists
+                  </p>
+                  <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.82rem', color: c.isLight ? '#92400e' : '#fde68a' }}>
+                    <strong>{monthName}</strong> already exists. Use the <strong>"Edit Existing Month"</strong> selector above to modify it.
+                  </p>
+                </div>
               </div>
             )}
 
-            {/* Income section */}
-            <div className="mb-5">
-              <p className="text-xs font-semibold uppercase tracking-wider mb-3 pb-2 border-b"
-                style={{ color: 'var(--text-muted)', borderColor: 'var(--border)' }}>
+            {/* Income */}
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', color: c.textMuted, marginBottom: 12, paddingBottom: 8, borderBottom: `1px solid ${c.cardBorder}` }}>
                 💰 Income (USD)
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
                 {field('Ads Revenue', 'adsRevenue', 'number', '0.00')}
                 {field('Subscriptions / IAP', 'subscriptions', 'number', '0.00')}
                 {field('Adj Invalid Traffic', 'adjInvalidTraffic', 'number', '0.00')}
               </div>
             </div>
 
-            {/* Marketing section */}
-            <div className="mb-5">
-              <p className="text-xs font-semibold uppercase tracking-wider mb-3 pb-2 border-b"
-                style={{ color: 'var(--text-muted)', borderColor: 'var(--border)' }}>
+            {/* Marketing */}
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', color: c.textMuted, marginBottom: 12, paddingBottom: 8, borderBottom: `1px solid ${c.cardBorder}` }}>
                 📣 Marketing Costs (USD)
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 12 }}>
                 {field('Ads Spend', 'adsSpend', 'number', '0.00')}
                 {field('Taxes', 'taxes', 'number', '0.00')}
               </div>
-              <div className="mt-3 flex items-center gap-2 p-3 rounded-lg" style={{ background: 'var(--bg-base)' }}>
-                <input
-                  id="aitToggle"
-                  type="checkbox"
-                  checked={form.aitInMarketing}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, background: c.isLight ? 'rgba(30,111,255,0.04)' : 'rgba(7,21,69,0.4)', border: `1px solid ${c.cardBorder}` }}>
+                <input id="aitToggle" type="checkbox" checked={form.aitInMarketing}
                   onChange={e => setForm(f => ({ ...f, aitInMarketing: e.target.checked }))}
-                  className="w-4 h-4 accent-amber-400"
+                  style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#fbbf24' }}
                 />
-                <label htmlFor="aitToggle" className="text-sm cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
+                <label htmlFor="aitToggle" style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', cursor: 'pointer', color: c.textSub }}>
                   Include AIT in Marketing costs{' '}
-                  <span style={{ color: 'var(--text-muted)' }}>(old format: Jul 2024 – Jun 2025)</span>
+                  <span style={{ color: c.textMuted }}>(old format: Jul 2024 – Jun 2025)</span>
                 </label>
               </div>
             </div>
 
             {/* Settings */}
-            <div className="mb-5">
-              <p className="text-xs font-semibold uppercase tracking-wider mb-3 pb-2 border-b"
-                style={{ color: 'var(--text-muted)', borderColor: 'var(--border)' }}>
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', color: c.textMuted, marginBottom: 12, paddingBottom: 8, borderBottom: `1px solid ${c.cardBorder}` }}>
                 ⚙️ Settings
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
                 {field('USD / PKR Rate', 'pkrRate', 'number', '283')}
                 <div>
                   <label className="label">Payment Status</label>
@@ -286,42 +318,96 @@ export default function DataEntry() {
 
             {/* Live Preview */}
             {computed && (
-              <div className="mb-5 rounded-xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg-base)' }}>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+              <div style={{ marginBottom: 20, borderRadius: 10, border: `1px solid ${c.cardBorder}`, padding: 16, background: c.isLight ? 'rgba(240,245,255,0.5)' : 'rgba(7,21,69,0.3)' }}>
+                <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', letterSpacing: 1.2, textTransform: 'uppercase', color: c.textMuted, marginBottom: 12 }}>
                   Live Preview
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
                   {[
-                    { label: 'Total Income', value: `$${computed.totalIncome}` },
-                    { label: 'Total Marketing', value: `$${computed.totalMarketing}`, red: true },
-                    { label: 'Net Balance', value: `$${computed.balance}`, gold: true },
-                    { label: 'Investor 30%', value: `$${computed.share} / PKR ${computed.sharePKR}`, green: true },
-                  ].map(({ label, value, red, gold, green }) => (
-                    <div key={label} className="rounded-lg p-2.5 border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-                      <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
-                      <p className={`text-sm font-mono font-semibold ${gold ? 'gold-text' : green ? 'text-emerald-400' : red ? 'text-red-400' : ''}`}
-                        style={!gold && !green && !red ? { color: 'var(--text-primary)' } : {}}>
-                        {value}
-                      </p>
+                    { label: 'Total Income', value: `$${computed.totalIncome}`, color: c.textPrimary },
+                    { label: 'Total Marketing', value: `$${computed.totalMarketing}`, color: c.red },
+                    { label: 'Net Balance', value: `$${computed.balance}`, color: c.textPrimary },
+                    { label: 'Investor 30%', value: `$${computed.share} / PKR ${computed.sharePKR}`, color: c.green },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} style={{ padding: '10px 12px', borderRadius: 8, background: c.cardBg, border: `1px solid ${c.cardBorder}` }}>
+                      <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.56rem', color: c.textMuted, marginBottom: 5, letterSpacing: 0.8 }}>{label}</p>
+                      <p style={{ fontFamily: 'monospace', fontSize: '0.88rem', fontWeight: 700, color }}>{value}</p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* Fix 1: Error toast — bold, prominent red */}
             {error && (
-              <div className="mb-4 text-xs px-3 py-2.5 rounded-lg bg-red-900/20 border border-red-800/40 text-red-400">{error}</div>
-            )}
-            {success && (
-              <div className="mb-4 text-xs px-3 py-2.5 rounded-lg bg-emerald-900/20 border border-emerald-800/40 text-emerald-400">{success}</div>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '12px 16px', borderRadius: 10, marginBottom: 16,
+                background: c.isLight ? 'rgba(220,38,38,0.06)' : 'rgba(248,113,113,0.08)',
+                border: `1.5px solid ${c.isLight ? 'rgba(220,38,38,0.4)' : 'rgba(248,113,113,0.45)'}`,
+                boxShadow: `0 0 12px ${c.isLight ? 'rgba(220,38,38,0.1)' : 'rgba(248,113,113,0.1)'}`,
+              }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>❌</span>
+                <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: c.isLight ? '#dc2626' : '#f87171', margin: 0 }}>{error}</p>
+              </div>
             )}
 
-            <button
-              onClick={handleSave}
-              disabled={saving || (!isEdit && existingIds.includes(monthId))}
-              className="btn-gold w-full justify-center py-2.5">
-              {saving ? 'Saving…' : isEdit ? '✓ Update Month' : '+ Save New Month'}
-            </button>
+            {/* Fix 1: Success toast — bold, prominent green */}
+            {success && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '12px 16px', borderRadius: 10, marginBottom: 16,
+                background: c.isLight ? 'rgba(5,150,105,0.07)' : 'rgba(52,211,153,0.08)',
+                border: `1.5px solid ${c.isLight ? 'rgba(5,150,105,0.45)' : 'rgba(52,211,153,0.45)'}`,
+                boxShadow: `0 0 14px ${c.isLight ? 'rgba(5,150,105,0.12)' : 'rgba(52,211,153,0.15)'}`,
+              }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>✅</span>
+                <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: c.isLight ? '#065f46' : '#34d399', margin: 0 }}>{success}</p>
+              </div>
+            )}
+
+            {/* Fix 2: Action buttons row — Update Month + Clear Record */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={handleSave}
+                disabled={saving || monthAlreadyExists}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '12px 20px', borderRadius: 8, border: 'none', cursor: saving || monthAlreadyExists ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Exo 2, sans-serif', fontSize: '0.9rem', fontWeight: 700,
+                  background: saving || monthAlreadyExists
+                    ? 'rgba(30,111,255,0.3)'
+                    : 'linear-gradient(135deg, #1e6fff, #00a8e8)',
+                  color: '#fff',
+                  boxShadow: saving || monthAlreadyExists ? 'none' : '0 0 20px rgba(30,111,255,0.4)',
+                  transition: '0.2s ease',
+                  opacity: saving || monthAlreadyExists ? 0.6 : 1,
+                }}>
+                {saving ? '⏳ Saving…' : isEdit ? '✓ Update Month' : '+ Save New Month'}
+              </button>
+
+              {/* Fix 2: Clear Record — only shown in edit mode */}
+              {isEdit && (
+                <button
+                  onClick={handleClear}
+                  disabled={clearing}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    padding: '12px 20px', borderRadius: 8, cursor: clearing ? 'not-allowed' : 'pointer',
+                    fontFamily: 'Exo 2, sans-serif', fontSize: '0.88rem', fontWeight: 600,
+                    background: 'transparent',
+                    color: c.isLight ? '#dc2626' : '#f87171',
+                    border: `1.5px solid ${c.isLight ? 'rgba(220,38,38,0.35)' : 'rgba(248,113,113,0.35)'}`,
+                    transition: '0.2s ease',
+                    opacity: clearing ? 0.6 : 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = c.isLight ? 'rgba(220,38,38,0.06)' : 'rgba(248,113,113,0.08)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                  {clearing ? '⏳ Clearing…' : '🗑 Clear Record'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </Layout>
