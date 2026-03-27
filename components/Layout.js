@@ -98,18 +98,18 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
 
           <Link href={user?.role === 'admin' ? '/admin' : '/investor'}
             style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
-            {/* Real Viral Mobitech logo — dark version for dark bg nav, light for light mode */}
+            {/* Logo image has its own bg — display directly, no wrapper */}
             <img
               src={c.isLight ? '/logo-light.png' : '/logo-dark.png'}
               alt="Viral Mobitech"
               style={{
-                width: 40, height: 40,
+                width: 38, height: 38,
                 borderRadius: 8,
                 objectFit: 'cover',
-                boxShadow: c.isLight
-                  ? '0 2px 10px rgba(30,111,255,0.2)'
-                  : '0 0 16px rgba(0,200,255,0.3)',
                 flexShrink: 0,
+                boxShadow: c.isLight
+                  ? '0 2px 8px rgba(30,111,255,0.18)'
+                  : '0 0 14px rgba(0,200,255,0.28)',
               }}
             />
             <div className="hidden sm:block">

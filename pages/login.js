@@ -106,28 +106,19 @@ export default function Login() {
           {/* Logo + heading */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
 
-            {/* Fix 2: Correct logo dimensions — square container, object-contain */}
-            <div style={{
-              width: 84, height: 84,
-              borderRadius: 20,
-              margin: '0 auto 16px',
-              overflow: 'hidden',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: isLight ? '#ffffff' : 'rgba(7,21,69,0.7)',
-              boxShadow: logoShadow,
-              border: `1px solid ${cardBorder}`,
-            }}>
-              <img
-                src={logoSrc}
-                alt="Viral Mobitech"
-                style={{
-                  width: '80%',
-                  height: '80%',
-                  objectFit: 'contain',
-                  display: 'block',
-                }}
-              />
-            </div>
+            {/* Logo — image has its own bg, display directly with rounded corners */}
+            <img
+              src={logoSrc}
+              alt="Viral Mobitech"
+              style={{
+                width: 84, height: 84,
+                borderRadius: 18,
+                objectFit: 'cover',
+                margin: '0 auto 16px',
+                display: 'block',
+                boxShadow: logoShadow,
+              }}
+            />
 
             {/* Blinking badge */}
             <div style={{
