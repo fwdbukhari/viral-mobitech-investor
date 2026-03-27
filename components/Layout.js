@@ -1,26 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { applyTheme } from '../pages/_app'
 
-const SunIcon = () => (
-  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-)
-const MoonIcon = () => (
-  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-  </svg>
-)
-const SystemIcon = () => (
-  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-  </svg>
-)
 const MenuIcon = () => (
   <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -32,44 +13,9 @@ const CloseIcon = () => (
   </svg>
 )
 
-function ThemeSwitcher() {
-  const [theme, setTheme] = useState('dark')
-  useEffect(() => {
-    const saved = localStorage.getItem('vm_theme') || 'dark'
-    setTheme(saved)
-  }, [])
-
-  const set = (t) => {
-    setTheme(t)
-    applyTheme(t)
-  }
-
-  return (
-    <div className="flex items-center gap-0.5 p-1 rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--bg-base)' }}>
-      {[
-        { key: 'light', icon: <SunIcon />, label: 'Light' },
-        { key: 'dark', icon: <MoonIcon />, label: 'Dark' },
-        { key: 'system', icon: <SystemIcon />, label: 'System' },
-      ].map(({ key, icon, label }) => (
-        <button
-          key={key}
-          onClick={() => set(key)}
-          title={label}
-          className="p-1.5 rounded-md transition-all duration-200"
-          style={theme === key
-            ? { background: 'linear-gradient(135deg, #b8860b, #d4a017)', color: '#fff' }
-            : { color: 'var(--text-muted)' }}>
-          {icon}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 export default function Layout({ children, user, adminLinks, investorLinks }) {
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
-
   const navLinks = user?.role === 'admin' ? adminLinks : investorLinks
 
   async function handleLogout() {
@@ -77,32 +23,57 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
     router.push('/login')
   }
 
-  const isActive = (href) => router.pathname === href || (href !== '/admin' && router.pathname.startsWith(href + '/'))
+  const isActive = (href) =>
+    router.pathname === href ||
+    (href !== '/admin' && href !== '/investor' && router.pathname.startsWith(href + '/'))
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-base)' }}>
-      {/* Top Nav */}
-      <header className="sticky top-0 z-40 border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-        <div className="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+    <div className="min-h-screen flex flex-col relative z-10">
+      {/* ── Navbar ── */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 40,
+        height: 72,
+        background: 'rgba(1, 10, 30, 0.88)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        borderBottom: '1px solid rgba(0,200,255,0.18)',
+      }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+
           {/* Logo */}
-          <Link href={user?.role === 'admin' ? '/admin' : '/investor'} className="flex items-center gap-2.5 shrink-0">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm"
-              style={{ background: 'linear-gradient(135deg, #b8860b, #d4a017)' }}>
-              <span className="text-xs font-bold text-white">VM</span>
+          <Link href={user?.role === 'admin' ? '/admin' : '/investor'}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 8,
+              background: 'linear-gradient(135deg, #1e6fff, #00c8ff)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 16px rgba(0,200,255,0.35)',
+            }}>
+              <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: 12, color: '#fff', letterSpacing: 0 }}>VM</span>
             </div>
-            <span className="font-display text-sm font-bold hidden sm:block" style={{ color: 'var(--text-primary)' }}>
-              Viral Mobitech
-            </span>
+            <div className="hidden sm:block">
+              <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: '0.95rem', color: '#e8f4ff' }}>
+                Viral<span style={{ color: '#00c8ff' }}>Mobitech</span>
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {navLinks?.map(({ href, label, icon }) => (
               <Link key={href} href={href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                  isActive(href) ? 'nav-active' : ''
-                }`}
-                style={!isActive(href) ? { color: 'var(--text-secondary)' } : {}}>
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '7px 16px', borderRadius: 8,
+                  fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', fontWeight: 600,
+                  letterSpacing: '0.3px', textDecoration: 'none',
+                  color: isActive(href) ? '#00c8ff' : '#6a9abf',
+                  background: isActive(href) ? 'rgba(0,200,255,0.1)' : 'transparent',
+                  border: isActive(href) ? '1px solid rgba(0,200,255,0.2)' : '1px solid transparent',
+                  transition: '0.25s ease',
+                }}
+                onMouseEnter={e => { if (!isActive(href)) e.currentTarget.style.color = '#e8f4ff' }}
+                onMouseLeave={e => { if (!isActive(href)) e.currentTarget.style.color = '#6a9abf' }}>
                 <span>{icon}</span>
                 <span>{label}</span>
               </Link>
@@ -110,18 +81,21 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
-            <ThemeSwitcher />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{user?.name}</span>
-              <span className="text-xs font-medium capitalize" style={{ color: 'var(--text-muted)' }}>{user?.role}</span>
+              <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.72rem', fontWeight: 700, color: '#e8f4ff', letterSpacing: 0.5 }}>
+                {user?.name}
+              </span>
+              <span style={{ fontSize: '0.68rem', color: '#6a9abf', textTransform: 'uppercase', letterSpacing: 1 }}>
+                {user?.role}
+              </span>
             </div>
-            <button onClick={handleLogout}
-              className="btn-ghost text-xs px-3 py-1.5 hidden sm:flex font-semibold">
+            <button onClick={handleLogout} className="btn-ghost hidden sm:inline-flex"
+              style={{ padding: '7px 18px', fontSize: '0.78rem' }}>
               Sign Out
             </button>
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-1.5 rounded-lg"
-              style={{ color: 'var(--text-secondary)' }}>
+            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden"
+              style={{ color: '#6a9abf', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
               {mobileOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
           </div>
@@ -129,28 +103,38 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden border-t px-4 py-3 flex flex-col gap-1" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}>
+          <div style={{
+            borderTop: '1px solid rgba(0,200,255,0.18)',
+            background: 'rgba(1,10,30,0.97)',
+            padding: '12px 24px 16px',
+          }}>
             {navLinks?.map(({ href, label, icon }) => (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold ${isActive(href) ? 'nav-active' : ''}`}
-                style={!isActive(href) ? { color: 'var(--text-secondary)' } : {}}>
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 14px', borderRadius: 8, marginBottom: 4,
+                  fontFamily: 'Exo 2, sans-serif', fontSize: '0.9rem', fontWeight: 600,
+                  textDecoration: 'none',
+                  color: isActive(href) ? '#00c8ff' : '#6a9abf',
+                  background: isActive(href) ? 'rgba(0,200,255,0.1)' : 'transparent',
+                }}>
                 <span>{icon}</span><span>{label}</span>
               </Link>
             ))}
-            <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{user?.name}</span>
-              <button onClick={handleLogout} className="btn-ghost text-xs px-3 py-1.5">Sign Out</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(0,200,255,0.12)' }}>
+              <span style={{ fontSize: '0.85rem', color: '#6a9abf' }}>{user?.name}</span>
+              <button onClick={handleLogout} className="btn-ghost" style={{ padding: '6px 14px', fontSize: '0.78rem' }}>Sign Out</button>
             </div>
           </div>
         )}
       </header>
 
       {/* Page content */}
-      <main className="flex-1 max-w-screen-xl mx-auto w-full px-4 py-6">
+      <main style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '28px 24px' }}>
         {children}
       </main>
 
-      <footer className="border-t py-4 text-center text-xs font-medium" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+      <footer style={{ borderTop: '1px solid rgba(0,200,255,0.1)', padding: '16px 24px', textAlign: 'center', fontSize: '0.75rem', color: '#6a9abf', fontFamily: 'Exo 2, sans-serif' }}>
         © {new Date().getFullYear()} Viral Mobitech — Investor Portal
       </footer>
     </div>

@@ -74,10 +74,10 @@ export default function AdminDashboard() {
       <Layout user={user} adminLinks={NAV} investorLinks={NAV}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <h1 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.4rem', fontWeight: 700, color: '#e8f4ff', margin: 0 }}>
               Admin Overview
             </h1>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '0.82rem', color: '#6a9abf', marginTop: 4, fontFamily: 'Exo 2, sans-serif' }}>
               {months.length} months of data — {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </p>
           </div>

@@ -11,8 +11,7 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setError('')
-    setLoading(true)
+    setError(''); setLoading(true)
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
@@ -20,17 +19,10 @@ export default function Login() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
-      if (!res.ok) {
-        setError(data.error || 'Login failed')
-      } else {
-        if (data.role === 'admin') router.push('/admin')
-        else router.push('/investor')
-      }
-    } catch {
-      setError('Connection error. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+      if (!res.ok) setError(data.error || 'Login failed')
+      else router.push(data.role === 'admin' ? '/admin' : '/investor')
+    } catch { setError('Connection error. Please try again.') }
+    finally { setLoading(false) }
   }
 
   return (
@@ -38,99 +30,109 @@ export default function Login() {
       <Head>
         <title>Sign In — Viral Mobitech Investor Portal</title>
       </Head>
-      <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-        style={{ background: 'var(--bg-base)' }}>
+      <div style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '24px', position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Radial glow bg */}
+        <div style={{
+          position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+          width: 800, height: 400, borderRadius: '50%',
+          background: 'radial-gradient(ellipse 90% 70% at 50% 0%, rgba(30,111,255,0.14) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: 0, right: 0,
+          width: 400, height: 400,
+          background: 'radial-gradient(ellipse, rgba(0,200,255,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
 
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full opacity-5"
-            style={{ background: 'radial-gradient(ellipse, #d4a853 0%, transparent 70%)' }} />
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full opacity-5"
-            style={{ background: 'radial-gradient(ellipse, #d4a853 0%, transparent 70%)' }} />
-          {/* Decorative grid */}
-          <div className="absolute inset-0 opacity-[0.02]"
-            style={{
-              backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)',
-              backgroundSize: '40px 40px'
-            }} />
-        </div>
-
-        <div className="w-full max-w-sm relative z-10">
+        <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
           {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 shadow-lg"
-              style={{ background: 'linear-gradient(135deg, #b8860b, #d4a017)' }}>
-              <span className="font-display font-bold text-xl text-yellow-900">VM</span>
+          <div style={{ textAlign: 'center', marginBottom: 36 }} className="fade-up">
+            <div style={{
+              width: 60, height: 60, borderRadius: 16, margin: '0 auto 14px',
+              background: 'linear-gradient(135deg, #1e6fff, #00c8ff)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 35px rgba(0,200,255,0.45)',
+            }}>
+              <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 900, fontSize: 18, color: '#fff' }}>VM</span>
             </div>
-            <h1 className="font-display text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-              Viral Mobitech
-            </h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+
+            {/* Blinking badge */}
+            <div className="hero-badge" style={{ margin: '0 auto 16px', width: 'fit-content' }}>
               Investor Portal
-            </p>
+            </div>
+
+            <h1 style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: '1.5rem', color: '#e8f4ff', margin: 0 }}>
+              Viral<span style={{ color: '#00c8ff' }}>Mobitech</span>
+            </h1>
           </div>
 
           {/* Card */}
-          <div className="card shadow-2xl">
-            <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--text-secondary)' }}>
+          <div className="card fade-up-1">
+            <h2 style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.95rem', fontWeight: 600, color: '#6a9abf', marginBottom: 20, marginTop: 0 }}>
               Sign in to your account
             </h2>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
                 <label className="label">Username</label>
-                <input
-                  className="input"
-                  type="text"
-                  autoComplete="username"
+                <input className="input" type="text" autoComplete="username"
                   placeholder="Enter your username"
                   value={form.username}
                   onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-                  required
-                />
+                  required />
               </div>
 
               <div>
                 <label className="label">Password</label>
-                <div className="relative">
-                  <input
-                    className="input pr-10"
-                    type={showPass ? 'text' : 'password'}
+                <div style={{ position: 'relative' }}>
+                  <input className="input" type={showPass ? 'text' : 'password'}
                     autoComplete="current-password"
                     placeholder="Enter your password"
+                    style={{ paddingRight: 40 }}
                     value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    required
-                  />
+                    required />
                   <button type="button" onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
-                    style={{ color: 'var(--text-muted)' }}>
+                    style={{
+                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#6a9abf',
+                    }}>
                     {showPass ? '🙈' : '👁️'}
                   </button>
                 </div>
               </div>
 
               {error && (
-                <div className="text-xs px-3 py-2.5 rounded-lg bg-red-900/20 border border-red-800/40 text-red-400">
+                <div style={{
+                  padding: '10px 14px', borderRadius: 8, fontSize: '0.82rem', fontWeight: 500,
+                  background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', color: '#f87171',
+                }}>
                   {error}
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="btn-gold w-full justify-center py-2.5 mt-1">
+              <button type="submit" disabled={loading} className="btn-cyan"
+                style={{ width: '100%', justifyContent: 'center', marginTop: 4, padding: '13px' }}>
                 {loading ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <svg style={{ animation: 'spin 1s linear infinite', width: 16, height: 16 }} fill="none" viewBox="0 0 24 24">
+                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
-                    Signing in...
+                    Authenticating...
                   </span>
-                ) : 'Sign In'}
+                ) : 'Access Portal'}
               </button>
+
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </form>
           </div>
 
-          <p className="text-center mt-5 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.72rem', color: 'rgba(106,154,191,0.6)', fontFamily: 'Exo 2, sans-serif' }}>
             Secured & Private — Viral Mobitech © {new Date().getFullYear()}
           </p>
         </div>

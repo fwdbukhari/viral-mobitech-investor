@@ -15,31 +15,21 @@ function downloadCSV(months, currency) {
     currency === 'PKR' ? m.investorSharePKR : m.investorShare,
     m.paymentStatus,
   ])
-
   const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n')
   const blob = new Blob([csv], { type: 'text/csv' })
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `viral-mobitech-investor-report-${currency}.csv`
-  a.click()
+  const a = document.createElement('a'); a.href = url; a.download = `vm-investor-report.csv`; a.click()
   URL.revokeObjectURL(url)
 }
 
 async function downloadPDF(months, currency) {
   const { default: jsPDF } = await import('jspdf')
   const { default: autoTable } = await import('jspdf-autotable')
-
   const doc = new jsPDF({ orientation: 'landscape' })
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(18)
-  doc.setTextColor(212, 168, 83)
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(0, 200, 255)
   doc.text('Viral Mobitech', 14, 16)
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(10)
-  doc.setTextColor(120, 120, 140)
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(106, 154, 191)
   doc.text('Investor Report — All Months', 14, 23)
   doc.text(`Generated: ${new Date().toLocaleDateString()}  |  Currency: ${currency}`, 14, 29)
 
@@ -55,59 +45,55 @@ async function downloadPDF(months, currency) {
       m.paymentStatus,
     ]),
     styles: { fontSize: 8, cellPadding: 3 },
-    headStyles: { fillColor: [17, 21, 32], textColor: [212, 168, 83], fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [22, 27, 40] },
-    bodyStyles: { fillColor: [17, 21, 32], textColor: [200, 205, 220] },
-    columnStyles: {
-      5: { textColor: [52, 211, 153] },
-      6: { textColor: (cell) => cell.raw === 'Received' ? [52, 211, 153] : [251, 191, 36] },
-    },
+    headStyles: { fillColor: [7, 21, 69], textColor: [0, 200, 255], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [4, 15, 46] },
+    bodyStyles: { fillColor: [1, 10, 30], textColor: [232, 244, 255] },
   })
 
-  // Footer
-  const pageCount = doc.internal.getNumberOfPages()
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i)
-    doc.setFontSize(7)
-    doc.setTextColor(100)
-    doc.text(`Page ${i} of ${pageCount} — Viral Mobitech Investor Portal`, 14, doc.internal.pageSize.height - 8)
+  const pc = doc.internal.getNumberOfPages()
+  for (let i = 1; i <= pc; i++) {
+    doc.setPage(i); doc.setFontSize(7); doc.setTextColor(100)
+    doc.text(`Page ${i} of ${pc} — Viral Mobitech Investor Portal`, 14, doc.internal.pageSize.height - 8)
   }
-
-  doc.save(`viral-mobitech-investor-report-${currency}.pdf`)
+  doc.save(`vm-investor-report-${currency}.pdf`)
 }
 
 export default function MonthTable({ months, currency, isAdmin = false, onStatusChange }) {
   const [expanded, setExpanded] = useState(null)
   const [showAll, setShowAll] = useState(false)
-
   const displayed = showAll ? months : months.slice(-6).reverse()
+
+  const thStyle = {
+    padding: '10px 16px', textAlign: 'left',
+    fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', fontWeight: 600,
+    letterSpacing: '1px', textTransform: 'uppercase', color: '#6a9abf',
+    borderBottom: '1px solid rgba(0,200,255,0.12)',
+    background: 'rgba(4,15,46,0.6)', whiteSpace: 'nowrap',
+  }
+  const tdStyle = {
+    padding: '12px 16px', borderBottom: '1px solid rgba(0,200,255,0.08)',
+    fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem',
+  }
 
   return (
     <div>
-      {/* Download buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+        <h2 style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.78rem', color: '#6a9abf', letterSpacing: 1, textTransform: 'uppercase', margin: 0 }}>
           Monthly Breakdown — {months.length} months
         </h2>
-        <div className="flex gap-2">
-          <button className="btn-ghost text-xs px-3 py-1.5" onClick={() => downloadCSV(months, currency)}>
-            ↓ CSV
-          </button>
-          <button className="btn-ghost text-xs px-3 py-1.5" onClick={() => downloadPDF(months, currency)}>
-            ↓ PDF
-          </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn-ghost" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={() => downloadCSV(months, currency)}>↓ CSV</button>
+          <button className="btn-ghost" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={() => downloadPDF(months, currency)}>↓ PDF</button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+      <div style={{ borderRadius: 14, border: '1px solid rgba(0,200,255,0.15)', overflow: 'hidden' }}>
         <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-sm">
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-base)' }}>
+              <tr>
                 {['Month', 'Total Income', 'Marketing', 'Balance', 'Your Share (30%)', 'Status', ''].map(h => (
-                  <th key={h} className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap"
-                    style={{ color: 'var(--text-muted)' }}>{h}</th>
+                  <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -118,55 +104,57 @@ export default function MonthTable({ months, currency, isAdmin = false, onStatus
                 return (
                   <>
                     <tr key={m.id}
-                      className="border-b table-row-hover cursor-pointer transition-colors"
-                      style={{ borderColor: 'var(--border)' }}
+                      className="table-row-hover"
+                      style={{ cursor: 'pointer' }}
                       onClick={() => setExpanded(isOpen ? null : m.id)}>
-                      <td className="px-4 py-3 font-medium whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
-                        <div>{m.month}</div>
-                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{m.fiscalYear}</div>
+                      <td style={tdStyle}>
+                        <div style={{ fontWeight: 600, color: '#e8f4ff' }}>{m.month}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#6a9abf', marginTop: 2 }}>{m.fiscalYear}</div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      <td style={{ ...tdStyle, fontFamily: 'monospace', color: '#e8f4ff' }}>
                         {fmt(currency === 'PKR' ? Math.round(m.totalIncome * m.pkrRate) : m.totalIncome, currency)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap font-mono text-sm text-red-400">
+                      <td style={{ ...tdStyle, fontFamily: 'monospace', color: '#f87171' }}>
                         {fmt(currency === 'PKR' ? Math.round(m.totalMarketing * m.pkrRate) : m.totalMarketing, currency)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap font-mono text-sm" style={{ color: 'var(--text-primary)' }}>
+                      <td style={{ ...tdStyle, fontFamily: 'monospace', color: '#e8f4ff', fontWeight: 600 }}>
                         {fmt(currency === 'PKR' ? m.balancePKR : m.balance, currency)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap font-mono text-sm font-semibold text-emerald-400">
+                      <td style={{ ...tdStyle, fontFamily: 'monospace', color: '#34d399', fontWeight: 700 }}>
                         {fmt(currency === 'PKR' ? m.investorSharePKR : m.investorShare, currency)}
                       </td>
-                      <td className="px-4 py-3">
+                      <td style={tdStyle}>
                         {isAdmin ? (
                           <select
                             value={m.paymentStatus}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => { e.stopPropagation(); onStatusChange && onStatusChange(m.id, e.target.value) }}
-                            className={`text-xs rounded-full px-2 py-0.5 border cursor-pointer ${
-                              isReceived
-                                ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50'
-                                : 'bg-amber-900/30 text-amber-400 border-amber-800/50'
-                            }`}
-                            style={{ background: isReceived ? undefined : undefined }}>
+                            onClick={e => e.stopPropagation()}
+                            onChange={e => { e.stopPropagation(); onStatusChange && onStatusChange(m.id, e.target.value) }}
+                            style={{
+                              fontSize: '0.72rem', padding: '3px 8px', borderRadius: 50, cursor: 'pointer',
+                              background: isReceived ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)',
+                              color: isReceived ? '#34d399' : '#fbbf24',
+                              border: `1px solid ${isReceived ? 'rgba(52,211,153,0.3)' : 'rgba(251,191,36,0.3)'}`,
+                              fontFamily: 'Exo 2, sans-serif', fontWeight: 600,
+                            }}>
                             <option value="Received">Received</option>
                             <option value="Pending">Pending</option>
                           </select>
                         ) : (
                           <span className={isReceived ? 'badge-received' : 'badge-pending'}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${isReceived ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: isReceived ? '#34d399' : '#fbbf24', display: 'inline-block' }} />
                             {m.paymentStatus}
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center" style={{ color: 'var(--text-muted)' }}>
-                        <span className="text-xs">{isOpen ? '▲' : '▼'}</span>
+                      <td style={{ ...tdStyle, textAlign: 'center', color: '#6a9abf', fontSize: '0.7rem' }}>
+                        {isOpen ? '▲' : '▼'}
                       </td>
                     </tr>
+
                     {isOpen && (
-                      <tr key={`${m.id}-detail`} className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-base)' }}>
-                        <td colSpan={7} className="px-4 py-4">
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <tr key={`${m.id}-detail`}>
+                        <td colSpan={7} style={{ padding: '16px', background: 'rgba(4,15,46,0.4)', borderBottom: '1px solid rgba(0,200,255,0.08)' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
                             {[
                               { label: 'Ads Revenue', value: fmt(currency === 'PKR' ? Math.round(m.adsRevenue * m.pkrRate) : m.adsRevenue, currency) },
                               { label: 'Subscriptions', value: fmt(currency === 'PKR' ? Math.round(m.subscriptions * m.pkrRate) : m.subscriptions, currency) },
@@ -174,21 +162,25 @@ export default function MonthTable({ months, currency, isAdmin = false, onStatus
                               { label: 'Ads Spend', value: fmt(currency === 'PKR' ? Math.round(m.adsSpend * m.pkrRate) : m.adsSpend, currency) },
                               { label: 'Taxes', value: fmt(currency === 'PKR' ? Math.round(m.taxes * m.pkrRate) : m.taxes, currency) },
                               { label: 'USD Rate', value: `1 USD = PKR ${m.pkrRate}` },
-                              { label: 'Net Balance', value: fmt(currency === 'PKR' ? m.balancePKR : m.balance, currency), highlight: true },
-                              { label: 'Your 30% Share', value: fmt(currency === 'PKR' ? m.investorSharePKR : m.investorShare, currency), accent: true },
-                            ].map(({ label, value, highlight, accent }) => (
-                              <div key={label} className="rounded-lg p-2.5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                                <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
-                                <p className={`text-sm font-mono font-semibold ${accent ? 'text-emerald-400' : highlight ? 'gold-text' : ''}`}
-                                  style={!accent && !highlight ? { color: 'var(--text-primary)' } : {}}>
-                                  {value}
-                                </p>
+                              { label: 'Net Balance', value: fmt(currency === 'PKR' ? m.balancePKR : m.balance, currency), cyan: true },
+                              { label: 'Investor Share', value: fmt(currency === 'PKR' ? m.investorSharePKR : m.investorShare, currency), green: true },
+                            ].map(({ label, value, cyan, green }) => (
+                              <div key={label} style={{
+                                padding: '10px 12px', borderRadius: 10,
+                                background: 'rgba(7,21,69,0.5)', border: '1px solid rgba(0,200,255,0.12)',
+                              }}>
+                                <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.58rem', color: '#6a9abf', marginBottom: 5, letterSpacing: 0.8 }}>{label}</p>
+                                <p style={{
+                                  fontFamily: 'monospace', fontSize: '0.88rem', fontWeight: 700,
+                                  color: cyan ? '#00c8ff' : green ? '#34d399' : '#e8f4ff',
+                                  textShadow: cyan ? '0 0 12px rgba(0,200,255,0.4)' : 'none',
+                                }}>{value}</p>
                               </div>
                             ))}
                           </div>
                           {m.receiptUrl && (
                             <a href={m.receiptUrl} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 mt-3 text-xs text-gold-400 hover:text-gold-300">
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, fontSize: '0.8rem', color: '#00c8ff', textDecoration: 'none' }}>
                               🔗 View Receipt / Proof
                             </a>
                           )}
@@ -205,8 +197,12 @@ export default function MonthTable({ months, currency, isAdmin = false, onStatus
 
       {months.length > 6 && (
         <button onClick={() => setShowAll(!showAll)}
-          className="mt-3 w-full text-center text-xs py-2 rounded-lg transition-all"
-          style={{ color: 'var(--text-muted)', border: '1px dashed var(--border)' }}>
+          style={{
+            marginTop: 12, width: '100%', padding: '10px',
+            background: 'transparent', border: '1px dashed rgba(0,200,255,0.2)',
+            borderRadius: 10, color: '#6a9abf', fontSize: '0.8rem',
+            cursor: 'pointer', fontFamily: 'Exo 2, sans-serif', transition: '0.25s ease',
+          }}>
           {showAll ? '▲ Show recent only' : `▼ Show all ${months.length} months`}
         </button>
       )}

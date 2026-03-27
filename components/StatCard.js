@@ -1,32 +1,36 @@
 export default function StatCard({ label, value, sub, accent, icon, trend }) {
   return (
-    <div className="stat-card">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
+    <div className="stat-card card-hover" style={{ animationFillMode: 'both' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {icon && (
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-              style={{ background: accent ? 'rgba(184,134,11,0.12)' : 'var(--bg-base)' }}>
-              {icon}
-            </div>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+              background: accent ? 'rgba(0,200,255,0.1)' : 'rgba(30,111,255,0.1)',
+              border: '1px solid rgba(0,200,255,0.15)',
+            }}>{icon}</div>
           )}
           <p className="label">{label}</p>
         </div>
         {trend !== undefined && (
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-            trend >= 0 ? 'text-emerald-400 bg-emerald-50' : 'text-red-400 bg-red-50'
-          }`}
-          style={trend >= 0
-            ? { background: 'rgba(5,150,105,0.1)' }
-            : { background: 'rgba(220,38,38,0.1)' }}>
+          <span style={{
+            fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 50,
+            color: trend >= 0 ? '#34d399' : '#f87171',
+            background: trend >= 0 ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)',
+            border: `1px solid ${trend >= 0 ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)'}`,
+          }}>
             {trend >= 0 ? '▲' : '▼'} {Math.abs(trend).toFixed(1)}%
           </span>
         )}
       </div>
-      <p className={`text-2xl font-bold font-display leading-none ${accent ? 'gold-text' : ''}`}
-        style={accent ? {} : { color: 'var(--text-primary)' }}>
-        {value}
-      </p>
-      {sub && <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
+      <p style={{
+        fontFamily: accent ? 'Orbitron, monospace' : 'Exo 2, sans-serif',
+        fontSize: '1.6rem', fontWeight: 700, lineHeight: 1,
+        color: accent ? '#00c8ff' : '#e8f4ff',
+        textShadow: accent ? '0 0 20px rgba(0,200,255,0.4)' : 'none',
+      }}>{value}</p>
+      {sub && <p style={{ fontSize: '0.75rem', color: '#6a9abf', marginTop: 2 }}>{sub}</p>}
     </div>
   )
 }

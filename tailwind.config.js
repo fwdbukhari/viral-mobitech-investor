@@ -2,34 +2,23 @@
 module.exports = {
   darkMode: 'class',
   content: [
-    './pages/**/*.{js,jsx,ts,tsx}',
-    './components/**/*.{js,jsx,ts,tsx}',
+    './pages/**/*.{js,jsx}',
+    './components/**/*.{js,jsx}',
   ],
   theme: {
     extend: {
       colors: {
-        gold: {
-          300: '#f0d080',
-          400: '#e8b83a',
-          500: '#d4a853',
-          600: '#b8881e',
-          700: '#8f6812',
-        },
-        navy: {
-          800: '#111520',
-          900: '#0a0d12',
-          950: '#060810',
-        },
-        slate: {
-          750: '#1e2540',
-        },
+        deep:    '#010a1e',
+        navy:    '#040f2e',
+        blue:    '#071545',
+        accent:  '#1e6fff',
+        cyan:    '#00c8ff',
+        vmwhite: '#e8f4ff',
+        muted:   '#6a9abf',
       },
       fontFamily: {
-        display: ['"DM Serif Display"', 'serif'],
-        body: ['"DM Sans"', 'sans-serif'],
-      },
-      backgroundImage: {
-        'gold-gradient': 'linear-gradient(135deg, #d4a853 0%, #f0d080 50%, #d4a853 100%)',
+        head: ['Orbitron', 'monospace'],
+        body: ['"Exo 2"', 'sans-serif'],
       },
     },
   },
