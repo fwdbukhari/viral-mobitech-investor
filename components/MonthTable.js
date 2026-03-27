@@ -123,7 +123,7 @@ export default function MonthTable({ months, currency, isAdmin=false, onStatusCh
                       <td style={td({fontWeight:600,color:c.red})}>
                         {fmt(currency==='PKR'?Math.round(m.totalMarketing*m.pkrRate):m.totalMarketing,currency)}
                       </td>
-                      <td style={td({fontWeight:700, color: c.isLight ? '#1a3a8a' : '#c8deff', fontFamily:'Exo 2, sans-serif'})}>
+                      <td style={td({fontWeight:700, color: c.textPrimary, fontFamily:'Exo 2, sans-serif'})}>
                         {fmt(currency==='PKR'?m.balancePKR:m.balance,currency)}
                       </td>
                       <td style={td({fontFamily:'Orbitron, monospace',fontSize:'0.82rem',fontWeight:700,color:c.green})}>
