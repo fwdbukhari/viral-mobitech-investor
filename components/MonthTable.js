@@ -64,16 +64,18 @@ export default function MonthTable({ months, currency, isAdmin=false, onStatusCh
   const displayed = showAll ? months : months.slice(-6).reverse()
 
   const thStyle = {
-    padding:'10px 16px', textAlign:'left',
+    padding:'11px 16px', textAlign:'left',
     fontFamily:'Orbitron, monospace', fontSize:'0.58rem', fontWeight:600,
-    letterSpacing:'1px', textTransform:'uppercase', color: c.textMuted,
-    borderBottom:`1px solid ${c.cardBorder}`,
-    background: c.isLight ? 'rgba(230,238,255,0.7)' : 'rgba(1,10,30,0.8)',
+    letterSpacing:'1.2px', textTransform:'uppercase', color: c.textMuted,
+    borderBottom: c.isLight
+      ? '2px solid rgba(30,111,255,0.22)'
+      : '1px solid rgba(0,200,255,0.25)',
+    background: c.isLight ? 'rgba(220,232,255,0.6)' : 'rgba(1,10,30,0.85)',
     whiteSpace:'nowrap',
   }
   const td = (extra={}) => ({
     padding:'13px 16px',
-    borderBottom:`1px solid ${c.isLight ? 'rgba(30,111,255,0.07)' : 'rgba(0,200,255,0.07)'}`,
+    borderBottom:`1px solid ${c.isLight ? 'rgba(30,111,255,0.1)' : 'rgba(0,200,255,0.08)'}`,
     fontFamily:'Exo 2, sans-serif', fontSize:'0.88rem',
     ...extra,
   })
@@ -121,7 +123,7 @@ export default function MonthTable({ months, currency, isAdmin=false, onStatusCh
                       <td style={td({fontWeight:600,color:c.red})}>
                         {fmt(currency==='PKR'?Math.round(m.totalMarketing*m.pkrRate):m.totalMarketing,currency)}
                       </td>
-                      <td style={td({fontWeight:700,color:c.textPrimary})}>
+                      <td style={td({fontWeight:700, color: c.isLight ? '#1a3a8a' : '#c8deff', fontFamily:'Exo 2, sans-serif'})}>
                         {fmt(currency==='PKR'?m.balancePKR:m.balance,currency)}
                       </td>
                       <td style={td({fontFamily:'Orbitron, monospace',fontSize:'0.82rem',fontWeight:700,color:c.green})}>
@@ -200,7 +202,7 @@ export default function MonthTable({ months, currency, isAdmin=false, onStatusCh
       {months.length > 6 && (
         <button onClick={()=>setShowAll(!showAll)}
           style={{
-            marginTop:12,width:'100%',padding:'10px',
+            marginTop:14,width:'100%',padding:'11px 16px',
             background:'transparent',border:`1px dashed ${c.cardBorder}`,
             borderRadius:10,color:c.textMuted,fontSize:'0.8rem',
             cursor:'pointer',fontFamily:'Exo 2, sans-serif',transition:'0.25s ease',
