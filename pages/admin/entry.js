@@ -266,18 +266,17 @@ export default function DataEntry() {
             {/* Fix 3: Month already exists warning — bold and prominent */}
             {monthAlreadyExists && (
               <div style={{
-                display: 'flex', alignItems: 'flex-start', gap: 10,
-                padding: '12px 16px', borderRadius: 10, marginBottom: 20,
-                background: 'rgba(251,191,36,0.1)',
-                border: '1.5px solid rgba(251,191,36,0.5)',
-                boxShadow: '0 0 14px rgba(251,191,36,0.12)',
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '14px 16px', borderRadius: 10, marginBottom: 20,
+                background: 'linear-gradient(135deg, #d97706, #b45309)',
+                boxShadow: '0 4px 16px rgba(180,83,9,0.35)',
               }}>
-                <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+                <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>⚠️</span>
                 <div>
-                  <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.5, color: '#d97706', marginBottom: 3 }}>
+                  <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.7rem', fontWeight: 700, letterSpacing: 0.8, color: '#ffffff', marginBottom: 4 }}>
                     Month Already Exists
                   </p>
-                  <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', color: c.isLight ? '#92400e' : '#fde68a', margin: 0 }}>
+                  <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0 }}>
                     <strong>{monthName}</strong> already exists. Use the <strong>"Edit Existing Month"</strong> selector above to modify it.
                   </p>
                 </div>
@@ -305,16 +304,7 @@ export default function DataEntry() {
                 {field('Ads Spend', 'adsSpend', 'number', '0.00')}
                 {field('Taxes', 'taxes', 'number', '0.00')}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, background: c.isLight ? 'rgba(30,111,255,0.04)' : 'rgba(7,21,69,0.4)', border: `1px solid ${c.cardBorder}` }}>
-                <input id="aitToggle" type="checkbox" checked={form.aitInMarketing}
-                  onChange={e => setForm(f => ({ ...f, aitInMarketing: e.target.checked }))}
-                  style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#fbbf24' }}
-                />
-                <label htmlFor="aitToggle" style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', cursor: 'pointer', color: c.textSub }}>
-                  Include AIT in Marketing costs{' '}
-                  <span style={{ color: c.textMuted }}>(old format: Jul 2024 – Jun 2025)</span>
-                </label>
-              </div>
+
             </div>
 
             {/* Settings */}
@@ -338,19 +328,26 @@ export default function DataEntry() {
 
             {/* Live Preview */}
             {computed && (
-              <div style={{ marginBottom: 20, borderRadius: 10, border: `1px solid ${c.cardBorder}`, padding: 16, background: c.isLight ? 'rgba(240,245,255,0.5)' : 'rgba(7,21,69,0.3)' }}>
-                <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', letterSpacing: 1.2, textTransform: 'uppercase', color: c.textMuted, marginBottom: 12 }}>
+              <div style={{
+                marginBottom: 20, borderRadius: 12, padding: 16,
+                background: c.isLight
+                  ? 'linear-gradient(135deg, #1e3a6e, #0d2045)'
+                  : 'linear-gradient(135deg, #071545, #040f2e)',
+                border: '1px solid rgba(0,200,255,0.25)',
+                boxShadow: '0 4px 20px rgba(0,200,255,0.1)',
+              }}>
+                <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', letterSpacing: 1.5, textTransform: 'uppercase', color: '#00c8ff', marginBottom: 12 }}>
                   Live Preview
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
                   {[
-                    { label: 'Total Income', value: `$${computed.totalIncome}`, color: c.textPrimary },
-                    { label: 'Total Marketing', value: `$${computed.totalMarketing}`, color: c.red },
-                    { label: 'Net Balance', value: `$${computed.balance}`, color: c.textPrimary },
-                    { label: 'Investor 30%', value: `$${computed.share} / PKR ${computed.sharePKR}`, color: c.green },
+                    { label: 'Total Income', value: `$${computed.totalIncome}`, color: '#ffffff' },
+                    { label: 'Total Marketing', value: `$${computed.totalMarketing}`, color: '#ff7070' },
+                    { label: 'Net Balance', value: `$${computed.balance}`, color: '#ffffff' },
+                    { label: 'Investor 30%', value: `$${computed.share} / PKR ${computed.sharePKR}`, color: '#34d399' },
                   ].map(({ label, value, color }) => (
-                    <div key={label} style={{ padding: '10px 12px', borderRadius: 8, background: c.cardBg, border: `1px solid ${c.cardBorder}` }}>
-                      <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.56rem', color: c.textMuted, marginBottom: 5, letterSpacing: 0.8 }}>{label}</p>
+                    <div key={label} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(0,200,255,0.15)' }}>
+                      <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.56rem', color: 'rgba(255,255,255,0.55)', marginBottom: 5, letterSpacing: 0.8 }}>{label}</p>
                       <p style={{ fontFamily: 'monospace', fontSize: '0.88rem', fontWeight: 700, color }}>{value}</p>
                     </div>
                   ))}
