@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { applyTheme } from '../pages/_app'
+import { useTheme } from '../lib/theme'
 
 const MenuIcon = () => (
   <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -34,39 +35,33 @@ const SystemIcon = () => (
   </svg>
 )
 
-function ThemeSwitcher() {
+function ThemeSwitcher({ c }) {
   const [theme, setTheme] = useState('dark')
-
   useEffect(() => {
     const saved = localStorage.getItem('vm_theme') || 'dark'
     setTheme(saved)
   }, [])
 
-  const set = (t) => {
-    setTheme(t)
-    applyTheme(t)
-  }
-
-  const themes = [
-    { key: 'light', icon: <SunIcon />, label: 'Light' },
-    { key: 'dark',  icon: <MoonIcon />, label: 'Dark' },
-    { key: 'system', icon: <SystemIcon />, label: 'System' },
-  ]
+  const set = (t) => { setTheme(t); applyTheme(t) }
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 2, padding: '4px',
-      borderRadius: 8, border: '1px solid rgba(0,200,255,0.18)',
-      background: 'rgba(7,21,69,0.4)',
+      display: 'flex', alignItems: 'center', gap: 2, padding: 4,
+      borderRadius: 8, border: `1px solid ${c.cardBorder}`,
+      background: c.cardBg, backdropFilter: 'blur(8px)',
     }}>
-      {themes.map(({ key, icon, label }) => (
+      {[
+        { key: 'light', icon: <SunIcon />, label: 'Light' },
+        { key: 'dark', icon: <MoonIcon />, label: 'Dark' },
+        { key: 'system', icon: <SystemIcon />, label: 'System' },
+      ].map(({ key, icon, label }) => (
         <button key={key} onClick={() => set(key)} title={label}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             width: 26, height: 26, borderRadius: 6, border: 'none', cursor: 'pointer',
             transition: '0.2s ease',
             background: theme === key ? 'linear-gradient(135deg, #1e6fff, #00c8ff)' : 'transparent',
-            color: theme === key ? '#fff' : '#6a9abf',
+            color: theme === key ? '#fff' : c.textMuted,
             boxShadow: theme === key ? '0 0 10px rgba(0,200,255,0.3)' : 'none',
           }}>
           {icon}
@@ -79,6 +74,7 @@ function ThemeSwitcher() {
 export default function Layout({ children, user, adminLinks, investorLinks }) {
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { c } = useTheme()
   const navLinks = user?.role === 'admin' ? adminLinks : investorLinks
 
   async function handleLogout() {
@@ -92,16 +88,14 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
 
   return (
     <div className="min-h-screen flex flex-col relative z-10">
-      {/* ── Navbar ── */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 40, height: 72,
-        background: 'rgba(1, 10, 30, 0.88)',
+        background: c.navBg,
         backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
-        borderBottom: '1px solid rgba(0,200,255,0.18)',
+        borderBottom: `1px solid ${c.navBorder}`,
       }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
 
-          {/* Logo */}
           <Link href={user?.role === 'admin' ? '/admin' : '/investor'}
             style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
             <div style={{
@@ -113,13 +107,12 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
               <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: 12, color: '#fff' }}>VM</span>
             </div>
             <div className="hidden sm:block">
-              <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: '0.95rem', color: '#e8f4ff' }}>
-                Viral<span style={{ color: '#00c8ff' }}>Mobitech</span>
+              <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: '0.95rem', color: c.textPrimary }}>
+                Viral<span style={{ color: c.cyan }}>Mobitech</span>
               </span>
             </div>
           </Link>
 
-          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {navLinks?.map(({ href, label, icon }) => (
               <Link key={href} href={href}
@@ -128,25 +121,23 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
                   padding: '7px 16px', borderRadius: 8,
                   fontFamily: 'Exo 2, sans-serif', fontSize: '0.85rem', fontWeight: 600,
                   letterSpacing: '0.3px', textDecoration: 'none',
-                  color: isActive(href) ? '#00c8ff' : '#6a9abf',
-                  background: isActive(href) ? 'rgba(0,200,255,0.1)' : 'transparent',
-                  border: isActive(href) ? '1px solid rgba(0,200,255,0.2)' : '1px solid transparent',
+                  color: isActive(href) ? c.cyan : c.textMuted,
+                  background: isActive(href) ? `${c.cyan}18` : 'transparent',
+                  border: isActive(href) ? `1px solid ${c.cyan}33` : '1px solid transparent',
                   transition: '0.25s ease',
                 }}>
-                <span>{icon}</span>
-                <span>{label}</span>
+                <span>{icon}</span><span>{label}</span>
               </Link>
             ))}
           </nav>
 
-          {/* Right side */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            <ThemeSwitcher />
+            <ThemeSwitcher c={c} />
             <div className="hidden sm:flex flex-col items-end">
-              <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.7rem', fontWeight: 700, color: '#e8f4ff', letterSpacing: 0.5 }}>
+              <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.7rem', fontWeight: 700, color: c.textPrimary, letterSpacing: 0.5 }}>
                 {user?.name}
               </span>
-              <span style={{ fontSize: '0.65rem', color: '#6a9abf', textTransform: 'uppercase', letterSpacing: 1 }}>
+              <span style={{ fontSize: '0.65rem', color: c.textMuted, textTransform: 'uppercase', letterSpacing: 1 }}>
                 {user?.role}
               </span>
             </div>
@@ -155,15 +146,14 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
               Sign Out
             </button>
             <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden"
-              style={{ color: '#6a9abf', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+              style={{ color: c.textMuted, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
               {mobileOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
         {mobileOpen && (
-          <div style={{ borderTop: '1px solid rgba(0,200,255,0.18)', background: 'rgba(1,10,30,0.97)', padding: '12px 24px 16px' }}>
+          <div style={{ borderTop: `1px solid ${c.navBorder}`, background: c.navBg, padding: '12px 24px 16px' }}>
             {navLinks?.map(({ href, label, icon }) => (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)}
                 style={{
@@ -171,26 +161,25 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
                   padding: '10px 14px', borderRadius: 8, marginBottom: 4,
                   fontFamily: 'Exo 2, sans-serif', fontSize: '0.9rem', fontWeight: 600,
                   textDecoration: 'none',
-                  color: isActive(href) ? '#00c8ff' : '#6a9abf',
-                  background: isActive(href) ? 'rgba(0,200,255,0.1)' : 'transparent',
+                  color: isActive(href) ? c.cyan : c.textMuted,
+                  background: isActive(href) ? `${c.cyan}18` : 'transparent',
                 }}>
                 <span>{icon}</span><span>{label}</span>
               </Link>
             ))}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(0,200,255,0.12)' }}>
-              <ThemeSwitcher />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${c.navBorder}` }}>
+              <ThemeSwitcher c={c} />
               <button onClick={handleLogout} className="btn-ghost" style={{ padding: '6px 14px', fontSize: '0.78rem' }}>Sign Out</button>
             </div>
           </div>
         )}
       </header>
 
-      {/* Page content */}
       <main style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '28px 24px' }}>
         {children}
       </main>
 
-      <footer style={{ borderTop: '1px solid rgba(0,200,255,0.1)', padding: '16px 24px', textAlign: 'center', fontSize: '0.75rem', color: '#6a9abf', fontFamily: 'Exo 2, sans-serif' }}>
+      <footer style={{ borderTop: `1px solid ${c.navBorder}`, padding: '16px 24px', textAlign: 'center', fontSize: '0.75rem', color: c.textMuted, fontFamily: 'Exo 2, sans-serif' }}>
         © {new Date().getFullYear()} Viral Mobitech — Investor Portal
       </footer>
     </div>
