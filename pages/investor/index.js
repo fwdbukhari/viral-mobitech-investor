@@ -84,13 +84,13 @@ export default function InvestorDashboard() {
 
   return (
     <>
-      <Head><title>Investor Dashboard — Viral Mobitech</title></Head>
+      <Head><title>Dashboard — VM Hub</title></Head>
       {/* Fix 1: NAV=[] removes Dashboard button */}
       <Layout user={user} investorLinks={NAV} adminLinks={NAV}>
         {/* Header */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24 }}>
           <div>
-            <div className="hero-badge" style={{ marginBottom: 8 }}>Investor Portal</div>
+            <div className="hero-badge" style={{ marginBottom: 8 }}>VM Hub</div>
             <h1 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.35rem', fontWeight: 700, color: c.textPrimary, margin: 0 }}>
               Welcome back, <span style={{ color: c.cyan }}>{user?.name}</span>
             </h1>

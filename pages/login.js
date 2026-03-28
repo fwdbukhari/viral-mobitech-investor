@@ -61,7 +61,7 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Sign In — Viral Mobitech Investor Portal</title>
+        <title>Sign In — VM Hub</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
@@ -130,12 +130,12 @@ export default function Login() {
               fontFamily: 'Orbitron, monospace', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase',
             }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: cyan, boxShadow: `0 0 8px ${cyan}`, display: 'inline-block', animation: 'blink 2s infinite' }} />
-              Investor Portal
+              VM Hub
             </div>
 
             {/* Fix 1: "Viral" now uses textPrimary, not hardcoded white */}
             <h1 style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: '1.5rem', margin: 0, color: textPrimary }}>
-              Viral<span style={{ color: cyan }}>Mobitech</span>
+              VM <span style={{ color: cyan }}>Hub</span>
             </h1>
           </div>
 
@@ -243,7 +243,7 @@ export default function Login() {
           </div>
 
           <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.72rem', color: textMuted, fontFamily: 'Exo 2, sans-serif', opacity: 0.7 }}>
-            Secured & Private — Viral Mobitech © {new Date().getFullYear()}
+            Viral Mobitech © {new Date().getFullYear()} — VM Hub
           </p>
         </div>
 

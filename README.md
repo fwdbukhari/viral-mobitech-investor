@@ -1,39 +1,32 @@
-# Viral Mobitech — Investor Portal
+# VM Hub — Viral Mobitech Internal Platform
 
-A secure, private investor dashboard for **Viral Mobitech** — built to track monthly revenue, marketing costs, net balance, and investor profit shares.
-
----
-
-## Overview
-
-This is an internal web application for managing and viewing financial performance data. It supports multiple user roles with different levels of access:
-
-- **Admin** — Full access: data entry, investor management, monthly records
-- **Investor** — Read-only access: personal dashboard showing their share of net profits
-- **Multi-investor support** — Each investor has a configurable profit share percentage
+**VM Hub** is Viral Mobitech's internal business management platform — a central hub for running and monitoring the company's operations. It is modular by design, with each section serving a specific business function.
 
 ---
 
-## Features
+## Current Module: Investor Portal
 
-- Monthly revenue tracking (Ads Revenue, Subscriptions, Invalid Traffic adjustments)
+The first module tracks monthly revenue, marketing costs, net balance, and investor profit shares.
+
+**Features:**
+- Monthly revenue tracking (Ads Revenue, Subscriptions)
 - Marketing cost tracking (Ads Spend, Taxes)
 - Automatic net balance and investor share calculations
-- USD / PKR currency toggle with live PKR rate
+- USD / PKR currency toggle with live exchange rate
 - Revenue chart with show/hide toggle
 - Monthly breakdown table with CSV and PDF export
-- Payment status tracking (Received / Pending) per month
+- Payment status tracking per month (Received / Pending)
 - Add, edit, clear, and delete monthly records
+- Multi-investor support with configurable profit share per investor
 - Light / Dark / System theme switcher
-- Mobile responsive design
-- Secure cookie-based authentication
+- Mobile responsive
 
 ---
 
 ## Tech Stack
 
 - **Next.js 14** (Pages Router)
-- **Supabase** (PostgreSQL database)
+- **Supabase** (PostgreSQL)
 - **Tailwind CSS**
 - **Vercel** (hosting & deployment)
 
@@ -42,10 +35,10 @@ This is an internal web application for managing and viewing financial performan
 ## Setup (One-Time)
 
 ### 1. Supabase Database
-Go to your Supabase project → SQL Editor → run the schema to create the required tables (`months`, `investors`, `admin_credentials`).
+Run the schema SQL in your Supabase project → SQL Editor to create the required tables.
 
 ### 2. Environment Variables
-Set the following in your Vercel project settings (never commit these to the repo):
+Add these to Vercel project settings — never commit them to the repo:
 
 ```
 SUPABASE_URL=
@@ -55,38 +48,38 @@ ADMIN_USERNAME=
 ADMIN_PASSWORD=
 ```
 
-### 3. Initialize Admin Account
-After deployment, make a POST request to:
-```
-https://your-domain.vercel.app/api/admin/setup
-```
+### 3. Initialize Admin
+After deploying, make a POST request to `/api/admin/setup` to create the admin account.
 
-### 4. Seed Historical Data *(optional)*
-Log in as admin → Overview → click **⚡ Seed Historical Data** to load pre-existing records.
+### 4. Seed Data *(optional)*
+Log in as admin → Overview → click **⚡ Seed Historical Data**.
 
 ---
 
-## User Management
+## User Roles
 
-- Admin account is configured via environment variables
-- Investor accounts are created and managed through the Admin → Investors panel
-- Each investor gets their own username, password, and profit share percentage
+| Role | Access |
+|------|--------|
+| Admin | Full access — data entry, investor management, all records |
+| Investor | Personal dashboard — own share, monthly breakdown, reports |
+
+Investor accounts are created and managed through the Admin → Investors panel. Each investor has their own username, password, and profit share percentage.
 
 ---
 
 ## Deployment
 
-This project auto-deploys via **Vercel GitHub Integration**. Any push to the `main` branch triggers a new production deployment.
+Auto-deploys via **Vercel GitHub Integration** on every push to `main`.
 
 ---
 
-## Security Notes
+## Security
 
-- All credentials are stored as environment variables — never hardcoded
-- Passwords are hashed before storage
-- Auth uses HttpOnly cookies with SameSite=Lax
-- This repo is public — **never commit secrets, passwords, or API keys**
+- All credentials stored as Vercel environment variables
+- Passwords hashed before storage
+- HttpOnly, SameSite=Lax auth cookies
+- Public repo — never commit secrets or API keys
 
 ---
 
-*Built for Viral Mobitech — Mobile App Development, AI Solutions & Digital Growth*
+*VM Hub — Built for Viral Mobitech | Mobile App Development, AI Solutions & Digital Growth*

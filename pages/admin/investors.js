@@ -181,7 +181,7 @@ export default function InvestorsAdmin() {
 
   return (
     <>
-      <Head><title>Investors — Admin</title></Head>
+      <Head><title>Investors — VM Hub</title></Head>
       <Layout user={user} adminLinks={NAV} investorLinks={NAV}>
         <div className="max-w-3xl mx-auto">
 

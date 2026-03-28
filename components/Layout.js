@@ -114,7 +114,7 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
             />
             <div className="hidden sm:block">
               <span style={{ fontFamily: 'Orbitron, monospace', fontWeight: 700, fontSize: '0.95rem', color: c.textPrimary }}>
-                Viral<span style={{ color: c.cyan }}>Mobitech</span>
+                VM <span style={{ color: c.cyan }}>Hub</span>
               </span>
             </div>
           </Link>
@@ -186,7 +186,7 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
       </main>
 
       <footer style={{ borderTop: `1px solid ${c.navBorder}`, padding: '16px 24px', textAlign: 'center', fontSize: '0.75rem', color: c.textMuted, fontFamily: 'Exo 2, sans-serif' }}>
-        © {new Date().getFullYear()} Viral Mobitech — Investor Portal
+        © {new Date().getFullYear()} Viral Mobitech — VM Hub
       </footer>
     </div>
   )

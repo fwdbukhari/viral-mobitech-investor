@@ -207,7 +207,7 @@ export default function DataEntry() {
 
   return (
     <>
-      <Head><title>Data Entry — Admin</title></Head>
+      <Head><title>Data Entry — VM Hub</title></Head>
       <Layout user={user} adminLinks={NAV} investorLinks={NAV}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           {/* Header */}

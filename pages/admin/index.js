@@ -83,7 +83,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <Head><title>Admin Overview — Viral Mobitech</title></Head>
+      <Head><title>Admin — VM Hub</title></Head>
       <Layout user={user} adminLinks={NAV} investorLinks={NAV}>
         {/* Header */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24 }}>
