@@ -144,7 +144,7 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
                 {user?.name}
               </span>
               <span style={{ fontSize: '0.65rem', color: c.textMuted, textTransform: 'uppercase', letterSpacing: 1 }}>
-                {user?.role}
+                {user?.role === 'investor' ? 'Investor Portal' : user?.role}
               </span>
             </div>
             <button onClick={handleLogout} className="btn-ghost hidden sm:inline-flex"

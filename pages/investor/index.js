@@ -90,7 +90,9 @@ export default function InvestorDashboard() {
         {/* Header */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24 }}>
           <div>
-            <div className="hero-badge" style={{ marginBottom: 8 }}>VM Hub</div>
+            <p style={{ fontFamily: 'Orbitron, monospace', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '1.4px', textTransform: 'uppercase', color: c.textMuted, marginBottom: 6 }}>
+              Investor Portal
+            </p>
             <h1 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.35rem', fontWeight: 700, color: c.textPrimary, margin: 0 }}>
               Welcome back, <span style={{ color: c.cyan }}>{user?.name}</span>
             </h1>
@@ -128,7 +130,7 @@ export default function InvestorDashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginBottom: 18 }}>
           {[
             { label: 'Received', val: totalReceived, color: c.green, bg: `${c.green}18`, border: `${c.green}30`, icon: '✓', sub: `${received.length} months paid` },
-            { label: 'Pending', val: totalPending, color: c.amber, bg: `${c.amber}18`, border: `${c.amber}30`, icon: '⏳', sub: pending.length > 0 ? `${pending.length} month${pending.length > 1 ? 's' : ''} pending` : 'All payments received' },
+            { label: 'Pending', val: totalPending, color: c.amber, bg: `${c.amber}18`, border: `${c.amber}30`, icon: 'ANIM_PENDING', sub: pending.length > 0 ? `${pending.length} month${pending.length > 1 ? 's' : ''} pending` : 'All payments received' },
           ].map(({ label, val, color, bg, border, icon, sub }) => (
             <div key={label} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
@@ -139,7 +141,27 @@ export default function InvestorDashboard() {
                 <p style={{ fontFamily: 'Exo 2, sans-serif', fontSize: '0.75rem', color: c.textMuted, marginTop: 5 }}>{sub}</p>
               </div>
               <div style={{ width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, background: bg, border: `1px solid ${border}`, flexShrink: 0 }}>
-                {icon}
+                {icon === 'ANIM_PENDING' ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <style>{`
+                      @keyframes hg-top { 0%,100%{transform:scaleX(1)} 50%{transform:scaleX(0.4)} }
+                      @keyframes hg-bot { 0%{transform:scaleX(0)} 50%,100%{transform:scaleX(1)} }
+                      @keyframes hg-sand { 0%{d:path('M8 7 Q12 12 16 7')} 50%,100%{d:path('M8 7 Q12 9 16 7')} }
+                      @keyframes hg-drop { 0%,40%{opacity:0;transform:translateY(0)} 50%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(4px)} }
+                      @keyframes hg-fill { 0%,50%{transform:scaleY(0)} 100%{transform:scaleY(1)} }
+                    `}</style>
+                    {/* Hourglass frame */}
+                    <path d="M7 3h10M7 21h10" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M8 3 L8 9 L12 13 L16 9 L16 3" fill="#fbbf24" fillOpacity="0.25" stroke="#fbbf24" strokeWidth="1.5" strokeLinejoin="round"/>
+                    <path d="M8 21 L8 15 L12 13 L16 15 L16 21" fill="#fbbf24" fillOpacity="0.15" stroke="#fbbf24" strokeWidth="1.5" strokeLinejoin="round"/>
+                    {/* Top sand draining */}
+                    <ellipse cx="12" cy="7" rx="3" ry="1.2" fill="#fbbf24" style={{transformOrigin:'12px 7px', animation:'hg-top 2s ease-in-out infinite'}}/>
+                    {/* Sand drop */}
+                    <circle cx="12" cy="12.5" r="0.7" fill="#fbbf24" style={{animation:'hg-drop 2s ease-in infinite'}}/>
+                    {/* Bottom sand filling */}
+                    <ellipse cx="12" cy="18.5" rx="2.8" ry="1.2" fill="#fbbf24" style={{transformOrigin:'12px 19px', animation:'hg-fill 2s ease-in-out infinite'}}/>
+                  </svg>
+                ) : icon}
               </div>
             </div>
           ))}
