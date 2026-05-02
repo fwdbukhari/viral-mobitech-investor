@@ -53,7 +53,7 @@ export default function Login() {
   const inputBg     = isLight ? 'rgba(235,242,255,0.8)' : 'rgba(7,21,69,0.6)'
   const inputBorder = isLight ? 'rgba(30,111,255,0.22)' : 'rgba(0,200,255,0.18)'
   const cyan        = isLight ? '#1e6fff' : '#00c8ff'
-  const logoSrc     = isLight ? '/logo-light.png' : '/logo-dark.png'
+  const logoSrc     = '/logo-transparent.png'  // transparent — works on any bg
   const logoShadow  = isLight
     ? '0 4px 20px rgba(30,111,255,0.25)'
     : '0 0 35px rgba(0,200,255,0.45)'
@@ -111,12 +111,11 @@ export default function Login() {
               src={logoSrc}
               alt="Viral Mobitech"
               style={{
-                width: 84, height: 84,
-                borderRadius: 18,
-                objectFit: 'cover',
+                width: 88, height: 88,
+                objectFit: 'contain',
                 margin: '0 auto 16px',
                 display: 'block',
-                boxShadow: logoShadow,
+                filter: 'drop-shadow(0 0 18px rgba(0,200,255,0.45))',
               }}
             />
 

@@ -100,16 +100,15 @@ export default function Layout({ children, user, adminLinks, investorLinks }) {
             style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
             {/* Logo image has its own bg — display directly, no wrapper */}
             <img
-              src={c.isLight ? '/logo-light.png' : '/logo-dark.png'}
+              src="/logo-transparent.png"
               alt="Viral Mobitech"
               style={{
-                width: 38, height: 38,
-                borderRadius: 8,
-                objectFit: 'cover',
+                width: 36, height: 36,
+                objectFit: 'contain',
                 flexShrink: 0,
-                boxShadow: c.isLight
-                  ? '0 2px 8px rgba(30,111,255,0.18)'
-                  : '0 0 14px rgba(0,200,255,0.28)',
+                filter: c.isLight
+                  ? 'drop-shadow(0 1px 4px rgba(30,111,255,0.3))'
+                  : 'drop-shadow(0 0 8px rgba(0,200,255,0.4))',
               }}
             />
             <div className="hidden sm:block">
