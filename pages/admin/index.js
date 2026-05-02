@@ -45,6 +45,7 @@ export default function AdminDashboard() {
   const [currency, setCurrency] = useState('USD')
   const [loading, setLoading] = useState(true)
   const [fiscalYear, setFiscalYear] = useState('all')
+  const [selectedMonth, setSelectedMonth] = useState('all')
   const { c } = useTheme()
   const [showGraph, setShowGraph] = useState(true)
 
@@ -73,7 +74,12 @@ export default function AdminDashboard() {
   )
 
   const fiscalYears = [...new Set(months.map(m => m.fiscalYear))].sort()
-  const filtered = fiscalYear === 'all' ? months : months.filter(m => m.fiscalYear === fiscalYear)
+  const monthsInYear = fiscalYear === 'all' ? [] : months.filter(m => m.fiscalYear === fiscalYear).map(m => ({ id: m.id, label: m.month }))
+  const filtered = (() => {
+    let base = fiscalYear === 'all' ? months : months.filter(m => m.fiscalYear === fiscalYear)
+    if (fiscalYear !== 'all' && selectedMonth !== 'all') base = base.filter(m => m.id === selectedMonth)
+    return base
+  })()
   const totalIncome = filtered.reduce((s, m) => s + (currency === 'PKR' ? Math.round(m.totalIncome * m.pkrRate) : m.totalIncome), 0)
   const totalMarketing = filtered.reduce((s, m) => s + (currency === 'PKR' ? Math.round(m.totalMarketing * m.pkrRate) : m.totalMarketing), 0)
   const totalBalance = filtered.reduce((s, m) => s + (currency === 'PKR' ? m.balancePKR : m.balance), 0)
@@ -96,11 +102,18 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <select value={fiscalYear} onChange={e => setFiscalYear(e.target.value)}
+            <select value={fiscalYear} onChange={e => { setFiscalYear(e.target.value); setSelectedMonth('all') }}
               className="input" style={{ width: 'auto', minWidth: 130, padding: '7px 12px', fontSize: '0.82rem' }}>
               <option value="all">All Years</option>
               {fiscalYears.map(fy => <option key={fy} value={fy}>{fy}</option>)}
             </select>
+            {fiscalYear !== 'all' && (
+              <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}
+                className="input" style={{ width: 'auto', minWidth: 130, padding: '7px 12px', fontSize: '0.82rem' }}>
+                <option value="all">All Months</option>
+                {monthsInYear.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+              </select>
+            )}
             <CurrencyToggle currency={currency} setCurrency={setCurrency} />
           </div>
         </div>
