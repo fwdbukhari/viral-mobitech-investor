@@ -1,23 +1,27 @@
 # VM Hub — Viral Mobitech Internal Platform
 
-**VM Hub** is Viral Mobitech's internal business management platform — a central hub for running and monitoring the company's operations. It is modular by design, with each section serving a specific business function.
+**VM Hub** is Viral Mobitech's internal business management platform — a central hub for running and monitoring company operations. It is modular by design, with each section serving a specific business function.
+
+**Live:** https://viral-mobitech-investor.vercel.app
 
 ---
 
 ## Current Module: Investor Portal
 
-The first module tracks monthly revenue, marketing costs, net balance, and investor profit shares.
+Tracks monthly revenue, marketing costs, net balance, and investor profit shares across fiscal years.
 
 **Features:**
-- Monthly revenue tracking (Ads Revenue, Subscriptions)
-- Marketing cost tracking (Ads Spend, Taxes)
-- Automatic net balance and investor share calculations
-- USD / PKR currency toggle with live exchange rate
+- Monthly revenue tracking — Ads Revenue, Subscriptions, Adj. Invalid Traffic
+- Marketing cost tracking — Ads Spend, Taxes
+- Automatic net balance and per-investor share calculations
+- USD / PKR currency toggle with configurable exchange rate
+- Year + Month cascading filter for drill-down analysis
 - Revenue chart with show/hide toggle
 - Monthly breakdown table with CSV and PDF export
-- Payment status tracking per month (Received / Pending)
+- Payment status per month (Received / Pending)
 - Add, edit, clear, and delete monthly records
-- Multi-investor support with configurable profit share per investor
+- Live preview during data entry
+- Multi-investor support with configurable profit share % per investor
 - Light / Dark / System theme switcher
 - Mobile responsive
 
@@ -26,33 +30,56 @@ The first module tracks monthly revenue, marketing costs, net balance, and inves
 ## Tech Stack
 
 - **Next.js 14** (Pages Router)
-- **Supabase** (PostgreSQL)
+- **GitHub JSON** (data storage — `data/revenue.json`)
 - **Tailwind CSS**
 - **Vercel** (hosting & deployment)
+
+> No database. All revenue data is stored as a JSON file directly in this repository.
+> This means zero downtime, zero maintenance, and no service dependencies beyond GitHub and Vercel.
+
+---
+
+## Data Storage
+
+All monthly revenue records are stored in `data/revenue.json` in this repo.
+
+- **Reads** — API fetches the file from GitHub on every request
+- **Writes** — API commits an updated file back to GitHub when data is saved
+- **Investor accounts** — stored in a Vercel environment variable (`INVESTORS_JSON`)
+- **Admin credentials** — stored in Vercel environment variables
 
 ---
 
 ## Setup (One-Time)
 
-### 1. Supabase Database
-Run the schema SQL in your Supabase project → SQL Editor to create the required tables.
+### 1. Fork or clone this repo
 
-### 2. Environment Variables
-Add these to Vercel project settings — never commit them to the repo:
+### 2. Set Environment Variables in Vercel
 
 ```
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-JWT_SECRET=
-ADMIN_USERNAME=
-ADMIN_PASSWORD=
+JWT_SECRET=            # any long random string
+ADMIN_USERNAME=        # your admin username
+ADMIN_PASSWORD=        # your admin password
+GITHUB_TOKEN=          # GitHub Personal Access Token with repo scope
+GITHUB_REPO=           # e.g. yourusername/your-repo-name
+INVESTORS_JSON=        # JSON array of investor accounts (see format below)
 ```
 
-### 3. Initialize Admin
-After deploying, make a POST request to `/api/admin/setup` to create the admin account.
+**INVESTORS_JSON format:**
+```json
+[
+  {"name":"Investor Name","username":"username","password":"password","sharePercent":30}
+]
+```
 
-### 4. Seed Data *(optional)*
-Log in as admin → Overview → click **⚡ Seed Historical Data**.
+### 3. Create `data/revenue.json`
+The file must exist in the repo before first use. Minimum content:
+```json
+{ "months": [] }
+```
+
+### 4. Deploy to Vercel
+Connect your GitHub repo to Vercel. It auto-deploys on every push to `main`.
 
 ---
 
@@ -60,25 +87,20 @@ Log in as admin → Overview → click **⚡ Seed Historical Data**.
 
 | Role | Access |
 |------|--------|
-| Admin | Full access — data entry, investor management, all records |
-| Investor | Personal dashboard — own share, monthly breakdown, reports |
+| Admin | Full access — data entry, all records, investor overview |
+| Investor | Personal dashboard — own share %, monthly breakdown, reports |
 
-Investor accounts are created and managed through the Admin → Investors panel. Each investor has their own username, password, and profit share percentage.
-
----
-
-## Deployment
-
-Auto-deploys via **Vercel GitHub Integration** on every push to `main`.
+Investor accounts are managed via the `INVESTORS_JSON` environment variable in Vercel.
 
 ---
 
 ## Security
 
-- All credentials stored as Vercel environment variables
-- Passwords hashed before storage
-- HttpOnly, SameSite=Lax auth cookies
-- Public repo — never commit secrets or API keys
+- All credentials stored as Vercel environment variables — never in code
+- Auth uses signed JWT tokens (7-day expiry)
+- HttpOnly, SameSite=Lax cookies
+- No database exposed to the internet
+- Repo is public — `data/revenue.json` contains financial data, keep this in mind
 
 ---
 
