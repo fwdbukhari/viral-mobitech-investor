@@ -1,11 +1,8 @@
-import bcrypt from 'bcryptjs'
 import { SignJWT } from 'jose'
 import { serialize } from 'cookie'
 
 function getInvestors() {
-  try {
-    return JSON.parse(process.env.INVESTORS_JSON || '[]')
-  } catch { return [] }
+  try { return JSON.parse(process.env.INVESTORS_JSON || '[]') } catch { return [] }
 }
 
 export default async function handler(req, res) {
@@ -17,21 +14,21 @@ export default async function handler(req, res) {
   const secret = new TextEncoder().encode(process.env.JWT_SECRET)
   let payload = null
 
-  // Check admin
-  if (username === process.env.ADMIN_USERNAME) {
-    const valid = await bcrypt.compare(password, await bcrypt.hash(process.env.ADMIN_PASSWORD, 10)
-      .then(() => bcrypt.hash(process.env.ADMIN_PASSWORD, 10)))
-    // Direct string compare for admin (no hash stored)
-    if (password === process.env.ADMIN_PASSWORD) {
-      payload = { username, role: 'admin', name: 'Admin' }
-    }
+  // Check admin — direct string compare against env vars
+  if (
+    username === process.env.ADMIN_USERNAME &&
+    password === process.env.ADMIN_PASSWORD
+  ) {
+    payload = { username, role: 'admin', name: 'Admin' }
   }
 
-  // Check investors
+  // Check investors — direct string compare against INVESTORS_JSON
   if (!payload) {
     const investors = getInvestors()
-    const investor = investors.find(i => i.username === username)
-    if (investor && password === investor.password) {
+    const investor = investors.find(
+      i => i.username === username && i.password === password
+    )
+    if (investor) {
       payload = {
         username,
         role: 'investor',
