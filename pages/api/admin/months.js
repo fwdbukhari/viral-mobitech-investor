@@ -1,75 +1,66 @@
-import { getSupabaseAdmin } from '../../../lib/supabase'
-import { requireAdmin } from '../../../lib/auth'
-
-function computeMonth(data) {
-  const adsRevenue = parseFloat(data.adsRevenue) || 0
-  const subscriptions = parseFloat(data.subscriptions) || 0
-  const adjInvalidTraffic = parseFloat(data.adjInvalidTraffic) || 0
-  const adsSpend = parseFloat(data.adsSpend) || 0
-  const taxes = parseFloat(data.taxes) || 0
-  const pkrRate = parseFloat(data.pkrRate) || 280
-  const aitInMarketing = data.aitInMarketing === true || data.aitInMarketing === 'true'
-
-  const totalIncome = aitInMarketing ? adsRevenue + subscriptions : adsRevenue + subscriptions - adjInvalidTraffic
-  const totalMarketing = aitInMarketing ? adsSpend + taxes + adjInvalidTraffic : adsSpend + taxes
-  const balance = totalIncome - totalMarketing
-  const investorShare = parseFloat((balance * 0.30).toFixed(2))
-
-  return {
-    id: data.id,
-    month: data.month,
-    fiscal_year: data.fiscalYear || getFiscalYear(data.id),
-    ads_revenue: adsRevenue, subscriptions, adj_invalid_traffic: adjInvalidTraffic,
-    ait_in_marketing: aitInMarketing,
-    total_income: parseFloat(totalIncome.toFixed(2)),
-    ads_spend: adsSpend, taxes,
-    total_marketing: parseFloat(totalMarketing.toFixed(2)),
-    balance: parseFloat(balance.toFixed(2)),
-    investor_share: investorShare,
-    pkr_rate: pkrRate,
-    balance_pkr: Math.round(balance * pkrRate),
-    investor_share_pkr: Math.round(investorShare * pkrRate),
-    payment_status: data.paymentStatus || 'Pending',
-    receipt_url: data.receiptUrl || '',
-  }
-}
+import { readData, writeData } from '../../../lib/github-storage'
+import { verifyAuth } from '../../../lib/auth'
 
 function getFiscalYear(id) {
   const [year, month] = id.split('-').map(Number)
-  if (month >= 7) return `${year}-${year + 1}`
-  return `${year - 1}-${year}`
+  return month >= 7 ? `${year}-${year + 1}` : `${year - 1}-${year}`
 }
 
-function toClient(m) {
-  return {
-    id: m.id, month: m.month, fiscalYear: m.fiscal_year,
-    adsRevenue: m.ads_revenue, subscriptions: m.subscriptions,
-    adjInvalidTraffic: m.adj_invalid_traffic, aitInMarketing: m.ait_in_marketing,
-    totalIncome: m.total_income, adsSpend: m.ads_spend, taxes: m.taxes,
-    totalMarketing: m.total_marketing, balance: m.balance,
-    investorShare: m.investor_share, pkrRate: m.pkr_rate,
-    balancePKR: m.balance_pkr, investorSharePKR: m.investor_share_pkr,
-    paymentStatus: m.payment_status, receiptUrl: m.receipt_url,
-  }
-}
-
-async function handler(req, res) {
-  const supabase = getSupabaseAdmin()
+export default async function handler(req, res) {
+  const user = await verifyAuth(req)
+  if (!user || user.role !== 'admin') return res.status(401).json({ error: 'Unauthorized' })
 
   if (req.method === 'GET') {
-    const { data, error } = await supabase.from('months').select('*').order('id')
-    if (error) return res.status(500).json({ error: error.message })
-    return res.status(200).json(data.map(toClient))
+    try {
+      const { data } = await readData()
+      return res.status(200).json(data.months.sort((a, b) => a.id.localeCompare(b.id)))
+    } catch (err) {
+      return res.status(500).json({ error: err.message })
+    }
   }
 
   if (req.method === 'POST') {
-    const row = computeMonth(req.body)
-    const { data, error } = await supabase.from('months').insert(row).select().single()
-    if (error) return res.status(error.code === '23505' ? 409 : 500).json({ error: error.message })
-    return res.status(201).json(toClient(data))
+    try {
+      const d = req.body
+      const adsRevenue = parseFloat(d.adsRevenue) || 0
+      const subscriptions = parseFloat(d.subscriptions) || 0
+      const adjInvalidTraffic = parseFloat(d.adjInvalidTraffic) || 0
+      const adsSpend = parseFloat(d.adsSpend) || 0
+      const taxes = parseFloat(d.taxes) || 0
+      const pkrRate = parseFloat(d.pkrRate) || 283
+      const totalIncome = adsRevenue + subscriptions - adjInvalidTraffic
+      const totalMarketing = adsSpend + taxes
+      const balance = totalIncome - totalMarketing
+      const investorShare = parseFloat((balance * 0.3).toFixed(2))
+      const balancePKR = Math.round(balance * pkrRate)
+      const investorSharePKR = Math.round(investorShare * pkrRate)
+
+      const newMonth = {
+        id: d.id,
+        month: d.month,
+        fiscalYear: d.fiscalYear || getFiscalYear(d.id),
+        adsRevenue, subscriptions, adjInvalidTraffic,
+        aitInMarketing: false,
+        totalIncome: parseFloat(totalIncome.toFixed(2)),
+        adsSpend, taxes,
+        totalMarketing: parseFloat(totalMarketing.toFixed(2)),
+        balance: parseFloat(balance.toFixed(2)),
+        investorShare, pkrRate, balancePKR, investorSharePKR,
+        paymentStatus: d.paymentStatus || 'Pending',
+        receiptUrl: d.receiptUrl || '',
+      }
+
+      const { data, sha } = await readData()
+      const exists = data.months.find(m => m.id === newMonth.id)
+      if (exists) return res.status(409).json({ error: 'Month already exists' })
+      data.months.push(newMonth)
+      data.months.sort((a, b) => a.id.localeCompare(b.id))
+      await writeData(data, sha)
+      return res.status(201).json(newMonth)
+    } catch (err) {
+      return res.status(500).json({ error: err.message })
+    }
   }
 
-  return res.status(405).end()
+  res.status(405).end()
 }
-
-export default requireAdmin(handler)

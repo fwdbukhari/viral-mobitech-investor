@@ -1,39 +1,24 @@
-import bcrypt from 'bcryptjs'
-import { getSupabaseAdmin } from '../../../lib/supabase'
-import { requireAdmin } from '../../../lib/auth'
+import { verifyAuth } from '../../../lib/auth'
 
-function toClient(inv) {
-  const { password_hash, ...safe } = inv
-  return { ...safe, sharePercent: inv.share_percent, createdAt: inv.created_at, plainPassword: inv.plain_password }
+// Investors are stored in INVESTORS_JSON env var
+// Format: [{"name":"Jawad","username":"jawad","password":"Jawad168$38","sharePercent":30}]
+
+function getInvestors() {
+  try { return JSON.parse(process.env.INVESTORS_JSON || '[]') } catch { return [] }
 }
 
-async function handler(req, res) {
-  const supabase = getSupabaseAdmin()
+export default async function handler(req, res) {
+  const user = await verifyAuth(req)
+  if (!user || user.role !== 'admin') return res.status(401).json({ error: 'Unauthorized' })
 
   if (req.method === 'GET') {
-    const { data, error } = await supabase.from('investors').select('*').order('created_at')
-    if (error) return res.status(500).json({ error: error.message })
-    return res.status(200).json(data.map(toClient))
+    const investors = getInvestors().map((inv, i) => ({ ...inv, id: i + 1 }))
+    return res.status(200).json(investors)
   }
 
-  if (req.method === 'POST') {
-    const { name, username, password, sharePercent, email, notes } = req.body
-    if (!name || !username || !password) return res.status(400).json({ error: 'name, username, and password required' })
-
-    const passwordHash = await bcrypt.hash(password, 10)
-    const { data, error } = await supabase.from('investors').insert({
-      name, username: username.toLowerCase(),
-      password_hash: passwordHash,
-      plain_password: password,
-      share_percent: parseFloat(sharePercent) || 30,
-      email: email || '', notes: notes || '',
-    }).select().single()
-
-    if (error) return res.status(error.code === '23505' ? 409 : 500).json({ error: error.message })
-    return res.status(201).json(toClient(data))
-  }
-
-  return res.status(405).end()
+  // For add/edit/delete — return instructions since env vars need manual update
+  return res.status(200).json({
+    ok: true,
+    message: 'Investor management is via INVESTORS_JSON environment variable in Vercel.',
+  })
 }
-
-export default requireAdmin(handler)

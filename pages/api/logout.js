@@ -1,7 +1,6 @@
-import { clearAuthCookie } from '../../lib/auth'
+import { serialize } from 'cookie'
 
 export default function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end()
-  clearAuthCookie(res)
+  res.setHeader('Set-Cookie', serialize('auth_token', '', { maxAge: 0, path: '/' }))
   return res.status(200).json({ ok: true })
 }
