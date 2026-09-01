@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     .setExpirationTime('7d')
     .sign(secret)
 
-  res.setHeader('Set-Cookie', serialize('auth_token', token, {
+  res.setHeader('Set-Cookie', serialize('vm_investor_auth', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
