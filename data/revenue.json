@@ -519,6 +519,26 @@
       "investorSharePKR": 230849,
       "paymentStatus": "Received",
       "receiptUrl": ""
+    },
+    {
+      "id": "2026-09",
+      "month": "September 2026",
+      "fiscalYear": "2026-2027",
+      "adsRevenue": 10636.7,
+      "subscriptions": 1332.67,
+      "adjInvalidTraffic": 45.15,
+      "aitInMarketing": false,
+      "totalIncome": 11924.22,
+      "adsSpend": 8524.37,
+      "taxes": 545.63,
+      "totalMarketing": 9070,
+      "balance": 2854.22,
+      "investorShare": 856.27,
+      "pkrRate": 276.7,
+      "balancePKR": 789763,
+      "investorSharePKR": 236930,
+      "paymentStatus": "Pending",
+      "receiptUrl": ""
     }
   ]
 }
